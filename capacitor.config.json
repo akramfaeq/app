@@ -1,0 +1,13 @@
+{
+  "appId": "com.manganova.app",
+  "appName": "Manga Nova",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}
