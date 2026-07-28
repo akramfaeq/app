@@ -7,21 +7,10 @@ import 'shared/widgets/main_scaffold.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // شاشة كاملة بدون شريط الحالة
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ),
+    const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
-
-  // اتجاه ثابت - portrait فقط
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(
     ChangeNotifierProvider(
       create: (_) => AppProvider(),
@@ -36,24 +25,12 @@ class MangaNovaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
-
     return MaterialApp(
       title: 'Manga Nova',
       debugShowCheckedModeBanner: false,
-      theme:      buildLightTheme(),
-      darkTheme:  buildDarkTheme(),
-      themeMode:  provider.isLightTheme ? ThemeMode.light : ThemeMode.dark,
-
-      // اتجاه التطبيق حسب اللغة
-      builder: (context, child) {
-        return Directionality(
-          textDirection: provider.isArabic
-              ? TextDirection.rtl
-              : TextDirection.ltr,
-          child: child!,
-        );
-      },
-
+      theme: buildLightTheme(),
+      darkTheme: buildDarkTheme(),
+      themeMode: provider.isLightTheme ? ThemeMode.light : ThemeMode.dark,
       home: const MainScaffold(),
     );
   }
