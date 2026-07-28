@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/manga_model.dart';
 import '../../services/manga_service.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
+
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
@@ -126,7 +128,7 @@ class _SearchPageState extends State<SearchPage> {
             decoration: BoxDecoration(
               color: cardBg,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: accent.withOpacity(0.08)),
+              border: Border.all(color: accent.withOpacity(0.12)),
             ),
             child: Directionality(
               textDirection: TextDirection.rtl,
@@ -138,7 +140,7 @@ class _SearchPageState extends State<SearchPage> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.tune_rounded, color: accent, size: 16),
+                        Icon(Icons.filter_list_rounded, color: accent, size: 20),
                         const SizedBox(width: 6),
                         Text('تصنيف بواسطة',
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: textClr)),
@@ -168,11 +170,9 @@ class _SearchPageState extends State<SearchPage> {
                     Row(
                       children: _types.map((t) => Padding(
                         padding: const EdgeInsets.only(left: 8),
-                        child: _Chip(
-                          label: t, selected: _selectedType == t,
-                          accent: accent, dark: dark, textClr: textClr,
-                          onTap: () => toggleType(t),
-                        ),
+                        child: _Chip(label: t, selected: _selectedType == t,
+                            accent: accent, dark: dark, textClr: textClr,
+                            onTap: () => toggleType(t)),
                       )).toList(),
                     ),
                     const SizedBox(height: 18),
@@ -181,28 +181,22 @@ class _SearchPageState extends State<SearchPage> {
                     Row(
                       children: _statuses.map((s) => Padding(
                         padding: const EdgeInsets.only(left: 8),
-                        child: _Chip(
-                          label: s, selected: _selectedStatus == s,
-                          accent: accent, dark: dark, textClr: textClr,
-                          onTap: () => toggleStatus(s),
-                        ),
+                        child: _Chip(label: s, selected: _selectedStatus == s,
+                            accent: accent, dark: dark, textClr: textClr,
+                            onTap: () => toggleStatus(s)),
                       )).toList(),
                     ),
                     const SizedBox(height: 22),
                     SizedBox(
-                      width: double.infinity,
-                      height: 50,
+                      width: double.infinity, height: 50,
                       child: ElevatedButton(
                         onPressed: () { _applyFilters(); Navigator.pop(context); },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: accent,
-                          foregroundColor: Colors.white,
+                          backgroundColor: accent, foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
+                          elevation: 0, shadowColor: Colors.transparent,
                         ),
-                        child: const Text('تطبيق',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                        child: const Text('تطبيق', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                       ),
                     ),
                   ],
@@ -225,195 +219,245 @@ class _SearchPageState extends State<SearchPage> {
     final subClr  = dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
     final labels  = _activeFilterLabels;
 
+    final headerHeight = labels.isNotEmpty ? 102.0 : 60.0;
+
     return Scaffold(
-      backgroundColor: bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ===== شريط البحث =====
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
-              child: Row(
-                children: [
-                  // زر الفلتر مع نيون + نقطة صفرا
-                  GestureDetector(
-                    onTap: _openFilterSheet,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 48, height: 48,
-                          decoration: BoxDecoration(
-                            color: dark ? AppColors.darkBgCard : AppColors.lightBgCard,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: accent.withOpacity(_hasActiveFilters ? 0.85 : 0.45),
-                              width: 1.8,
+      backgroundColor: bg, // 1. تعيين خلفية الـ Scaffold الصريحة
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Container(
+          color: bg, // 2. تعيين لون الحاوية الحاضنة
+          child: SafeArea(
+            bottom: false,
+            child: ColoredBox(
+              color: bg,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: [
+                  SliverPersistentHeader(
+                    floating: true,
+                    delegate: _HeaderDelegate(
+                      minHeight: headerHeight,
+                      maxHeight: headerHeight,
+                      child: Container(
+                        color: bg,
+                        padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: cardBg,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: accent.withOpacity(0.15)),
+                                    ),
+                                    child: TextField(
+                                      controller: _searchCtrl,
+                                      focusNode: _focusNode,
+                                      style: TextStyle(color: textClr, fontSize: 14),
+                                      decoration: InputDecoration(
+                                        hintText: 'ابحث عن مانغا...',
+                                        hintStyle: TextStyle(color: subClr, fontSize: 13),
+                                        suffixIcon: Icon(Icons.search_rounded, color: subClr, size: 20),
+                                        prefixIcon: _searchCtrl.text.isNotEmpty
+                                            ? GestureDetector(
+                                                onTap: () { _searchCtrl.clear(); _focusNode.unfocus(); },
+                                                child: Icon(Icons.close_rounded, color: subClr, size: 17))
+                                            : null,
+                                        border: InputBorder.none,
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                                        isDense: true,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                GestureDetector(
+                                  onTap: _openFilterSheet,
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        width: 48, height: 48,
+                                        decoration: BoxDecoration(
+                                          color: _hasActiveFilters ? accent.withOpacity(0.12) : cardBg,
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(
+                                            color: accent.withOpacity(_hasActiveFilters ? 0.35 : 0.15),
+                                            width: 1.2,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Icon(
+                                            Icons.filter_list_rounded,
+                                            size: 22,
+                                            color: _hasActiveFilters ? accent : subClr,
+                                          ),
+                                        ),
+                                      ),
+                                      if (_hasActiveFilters)
+                                        Positioned(
+                                          top: -2, right: -2,
+                                          child: Container(
+                                            width: 11, height: 11,
+                                            decoration: BoxDecoration(
+                                              color: Colors.redAccent,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: bg, width: 1.5),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: accent.withOpacity(_hasActiveFilters ? 0.35 : 0.15),
-                                blurRadius: 12,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Icon(Icons.tune_rounded, size: 22,
-                                color: accent.withOpacity(_hasActiveFilters ? 1.0 : 0.75)),
-                          ),
-                        ),
-                        if (_hasActiveFilters)
-                          Positioned(
-                            top: -4, right: -4,
-                            child: Container(
-                              width: 12, height: 12,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFB300),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: dark ? AppColors.darkBgDeep : AppColors.lightBgDeep,
-                                  width: 1.5,
+                            if (labels.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  child: Row(
+                                    children: labels.map((lbl) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(left: 6),
+                                        child: GestureDetector(
+                                          onTap: () => _removeFilterLabel(lbl),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: accent.withOpacity(0.15),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(color: accent.withOpacity(0.35), width: 1),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  lbl,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: dark ? accent : textClr,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 5),
+                                                Icon(Icons.close_rounded, size: 13, color: dark ? accent : subClr),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // حقل البحث
-                  Expanded(
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: accent.withOpacity(0.12)),
-                      ),
-                      child: TextField(
-                        controller: _searchCtrl,
-                        focusNode: _focusNode,
-                        textDirection: TextDirection.rtl,
-                        style: TextStyle(color: textClr, fontSize: 14),
-                        decoration: InputDecoration(
-                          hintText: 'ابحث عن مانغا...',
-                          hintTextDirection: TextDirection.rtl,
-                          hintStyle: TextStyle(color: subClr, fontSize: 13),
-                          suffixIcon: Icon(Icons.search_rounded, color: subClr, size: 20),
-                          prefixIcon: _searchCtrl.text.isNotEmpty
-                              ? GestureDetector(
-                                  onTap: () { _searchCtrl.clear(); _focusNode.unfocus(); },
-                                  child: Icon(Icons.close_rounded, color: subClr, size: 17),
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                          isDense: true,
+                            ],
+                          ],
                         ),
                       ),
                     ),
                   ),
+
+                  if (_loading)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      fillOverscroll: true,
+                      child: Container(
+                        color: bg,
+                        child: Center(child: CircularProgressIndicator(color: accent, strokeWidth: 2)),
+                      ),
+                    )
+                  else if (_results.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      fillOverscroll: true,
+                      child: Container(
+                        color: bg,
+                        child: _EmptyState(dark: dark, accent: accent),
+                      ),
+                    )
+                  else ...[
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+                      sliver: SliverGrid(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 110 / 185,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (ctx, i) => _SearchCard(manga: _results[i], dark: dark, accent: accent),
+                          childCount: _results.length,
+                        ),
+                      ),
+                    ),
+
+                    // 3. طبقة السيلفر المكملة التلقائية التي تصبغ أي ارتداد زاد عن الشاشة بنفس اللون
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      fillOverscroll: true,
+                      child: Container(color: bg),
+                    ),
+                  ],
                 ],
               ),
             ),
-
-            // ===== chips الفلاتر — تبدأ من اليمين =====
-            if (labels.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: labels.map((lbl) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 6),
-                          child: GestureDetector(
-                            onTap: () => _removeFilterLabel(lbl),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: accent,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(lbl,
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.white,
-                                          fontWeight: FontWeight.w700)),
-                                  const SizedBox(width: 5),
-                                  const Icon(Icons.close_rounded, size: 13, color: Colors.white),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ),
-
-            // ===== "كل المانغا" ثابتة — تختفي عند البحث أو الفلتر =====
-            if (!_hasActiveFilters && _searchCtrl.text.isEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text('كل المانغا',
-                        style: TextStyle(fontSize: 13, color: subClr, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-
-            // ===== الگريد =====
-            Expanded(
-              child: _loading
-                  ? Center(child: CircularProgressIndicator(color: accent, strokeWidth: 2))
-                  : _results.isEmpty
-                      ? _EmptyState(dark: dark, accent: accent)
-                      : Directionality(
-                          textDirection: TextDirection.rtl,
-                          child: GridView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                              childAspectRatio: 110 / 185,
-                            ),
-                            itemCount: _results.length,
-                            itemBuilder: (ctx, i) =>
-                                _SearchCard(manga: _results[i], dark: dark, accent: accent),
-                          ),
-                        ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ===== Chip =====
+class _HeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _HeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  bool shouldRebuild(_HeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
+}
+
 class _Chip extends StatelessWidget {
   final String label;
   final bool selected, dark;
   final Color accent, textClr;
   final VoidCallback onTap;
 
-  const _Chip({
-    required this.label, required this.selected, required this.accent,
-    required this.dark, required this.textClr, required this.onTap,
-  });
+  const _Chip({required this.label, required this.selected, required this.accent,
+      required this.dark, required this.textClr, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -421,26 +465,28 @@ class _Chip extends StatelessWidget {
       onTap: () { HapticFeedback.selectionClick(); onTap(); },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? accent : accent.withOpacity(0.07),
-          borderRadius: BorderRadius.circular(20),
+          color: selected ? accent.withOpacity(0.22) : accent.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? accent : accent.withOpacity(0.18),
-            width: 1.5,
+            color: selected ? accent.withOpacity(0.8) : accent.withOpacity(0.15),
+            width: 1.2,
           ),
         ),
-        child: Text(label,
-            style: TextStyle(
-              fontSize: 12, fontWeight: FontWeight.w700,
-              color: selected ? Colors.white : textClr,
-            )),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: selected ? (dark ? accent : accent) : textClr,
+          ),
+        ),
       ),
     );
   }
 }
 
-// ===== كارد البحث =====
 class _SearchCard extends StatelessWidget {
   final MangaModel manga;
   final bool dark;
@@ -461,62 +507,113 @@ class _SearchCard extends StatelessWidget {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 color: const Color(0xFF161129),
-                border: Border.all(color: accent.withOpacity(0.35), width: 1.5),
+                border: Border.all(
+                  color: accent.withOpacity(0.55),
+                  width: 1.5,
+                ),
                 boxShadow: [
-                  BoxShadow(color: accent.withOpacity(0.2), blurRadius: 10),
-                  BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2)),
+                  BoxShadow(
+                    color: accent.withOpacity(0.35),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(11),
+                borderRadius: BorderRadius.circular(14),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
                     manga.cover.isNotEmpty
-                        ? Image.network(manga.cover, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
-                                Icons.broken_image_outlined, color: Colors.white24, size: 22))
-                        : const Icon(Icons.image_outlined, color: Colors.white24, size: 28),
+                        ? CachedNetworkImage(
+                            imageUrl: manga.cover,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) =>
+                                Container(color: const Color(0xFF161129)),
+                            errorWidget: (_, __, ___) => Container(
+                              color: const Color(0xFF161129),
+                              child: const Icon(
+                                Icons.broken_image_outlined,
+                                color: Colors.white24,
+                                size: 22,
+                              ),
+                            ),
+                          )
+                        : Container(color: const Color(0xFF161129)),
+
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
-                            colors: [Colors.black.withOpacity(0.4), Colors.transparent],
-                            stops: const [0.0, 0.5],
+                            colors: [
+                              Colors.black.withOpacity(0.65),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.45],
                           ),
                         ),
                       ),
                     ),
+
                     Positioned(
-                      bottom: 6, left: 6,
+                      bottom: 8,
+                      left: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.65),
-                          borderRadius: BorderRadius.circular(7),
-                          border: Border.all(color: const Color(0x40E8B85C)),
+                          color: Colors.black.withOpacity(0.75),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(0xFFE8B85C).withOpacity(0.6),
+                            width: 1,
+                          ),
                         ),
-                        child: Text('★ ${manga.rating.toStringAsFixed(1)}',
-                            style: const TextStyle(
-                                fontSize: 9.5, color: AppColors.starColor,
-                                fontWeight: FontWeight.w800)),
+                        child: Text(
+                          '${manga.rating.toStringAsFixed(1)} ★',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFFE8B85C),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
+
                     Positioned(
-                      top: 6, right: 6,
+                      top: 8,
+                      right: 8,
                       child: Container(
-                        width: 26, height: 26,
+                        width: 28,
+                        height: 28,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.55),
+                          color: Colors.black.withOpacity(0.5),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+                          border: Border.all(
+                            color: accent.withOpacity(0.6),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: accent.withOpacity(0.35),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
-                        child: const Icon(Icons.favorite_border_rounded,
-                            color: Colors.white, size: 12),
+                        child: Icon(
+                          Icons.favorite_border_rounded,
+                          color: Colors.white.withOpacity(0.9),
+                          size: 14,
+                        ),
                       ),
                     ),
                   ],
@@ -524,13 +621,19 @@ class _SearchCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Text(manga.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textClr)),
+            child: Text(
+              manga.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: textClr,
+              ),
+            ),
           ),
         ],
       ),
@@ -538,7 +641,6 @@ class _SearchCard extends StatelessWidget {
   }
 }
 
-// ===== لا توجد نتائج =====
 class _EmptyState extends StatelessWidget {
   final bool dark;
   final Color accent;
@@ -552,9 +654,9 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(Icons.search_off_rounded, size: 52, color: accent.withOpacity(0.2)),
           const SizedBox(height: 12),
-          Text('لا توجد نتائج',
-              style: TextStyle(color: dark ? Colors.white38 : Colors.black38,
-                  fontSize: 14, fontWeight: FontWeight.w600)),
+          Text('لا توجد نتائج', style: TextStyle(
+              color: dark ? Colors.white38 : Colors.black38,
+              fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Text('جرب تغيير الفلاتر أو كلمة البحث',
               style: TextStyle(color: dark ? Colors.white24 : Colors.black26, fontSize: 12)),

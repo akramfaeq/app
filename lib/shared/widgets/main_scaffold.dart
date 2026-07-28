@@ -17,14 +17,16 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _index = 0;
   bool _librarySortByRating = false;
 
-  int _libraryKey = 0;
-
   void _nav(int index, {bool sortByRating = false}) {
     setState(() {
       _index = index;
       if (index == 1) {
+        // ✅ فقط لما يجي من "الأعلى تقييماً" نرتب — وإلا نبقى عشوائي
         _librarySortByRating = sortByRating;
-        _libraryKey++; // يجبر إعادة بناء المكتبة في كل مرة
+      }
+      // ✅ لما يضغط الرئيسية من BottomNav نرجع المكتبة عشوائية
+      if (index == 0) {
+        _librarySortByRating = false;
       }
     });
   }
@@ -42,7 +44,8 @@ class _MainScaffoldState extends State<MainScaffold> {
         index: _index,
         children: [
           HomePage(onNavigate: _nav),
-          LibraryPage(key: ValueKey(_libraryKey), sortByRating: _librarySortByRating),
+          // ✅ بدون Key — المكتبة تبقى محفوظة في الذاكرة دائماً
+          LibraryPage(sortByRating: _librarySortByRating),
           const SearchPage(),
           _PlaceholderPage(label: provider.t('more'), icon: Icons.more_horiz_rounded, dark: dark),
         ],
@@ -68,15 +71,43 @@ class _MainScaffoldState extends State<MainScaffold> {
           top: false,
           child: SizedBox(
             height: 62,
-            // RTL: الرئيسية يمين ← المكتبة ← البحث ← المزيد يسار
             child: Directionality(
               textDirection: TextDirection.rtl,
               child: Row(
                 children: [
-                  _NavItem(icon: Icons.home_rounded, label: provider.t('home'), isActive: _index == 0, selectedClr: selectedClr, unselectedClr: unselectedClr, onTap: () => _nav(0)),
-                  _NavItem(icon: Icons.grid_view_rounded, label: provider.t('library'), isActive: _index == 1, selectedClr: selectedClr, unselectedClr: unselectedClr, onTap: () => _nav(1)),
-                  _NavItem(icon: Icons.search_rounded, label: provider.t('search'), isActive: _index == 2, selectedClr: selectedClr, unselectedClr: unselectedClr, onTap: () => _nav(2)),
-                  _NavItem(icon: Icons.more_horiz_rounded, label: provider.t('more'), isActive: _index == 3, selectedClr: selectedClr, unselectedClr: unselectedClr, onTap: () => _nav(3)),
+                  _NavItem(
+                    icon: Icons.home_rounded,
+                    label: provider.t('home'),
+                    isActive: _index == 0,
+                    selectedClr: selectedClr,
+                    unselectedClr: unselectedClr,
+                    onTap: () => _nav(0),
+                  ),
+                  _NavItem(
+                    icon: Icons.grid_view_rounded,
+                    label: provider.t('library'),
+                    isActive: _index == 1,
+                    selectedClr: selectedClr,
+                    unselectedClr: unselectedClr,
+                    // ✅ الضغط من BottomNav = عشوائي دائماً
+                    onTap: () => _nav(1, sortByRating: false),
+                  ),
+                  _NavItem(
+                    icon: Icons.search_rounded,
+                    label: provider.t('search'),
+                    isActive: _index == 2,
+                    selectedClr: selectedClr,
+                    unselectedClr: unselectedClr,
+                    onTap: () => _nav(2),
+                  ),
+                  _NavItem(
+                    icon: Icons.more_horiz_rounded,
+                    label: provider.t('more'),
+                    isActive: _index == 3,
+                    selectedClr: selectedClr,
+                    unselectedClr: unselectedClr,
+                    onTap: () => _nav(3),
+                  ),
                 ],
               ),
             ),
@@ -124,7 +155,6 @@ class _NavItem extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            // خط المؤشر تحت النص
             Container(
               width: 28, height: 3,
               decoration: BoxDecoration(
