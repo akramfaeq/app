@@ -5,10 +5,10 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_provider.dart';
 import '../../models/manga_model.dart';
 import '../../services/manga_service.dart';
+import '../details/detail_page.dart';
 
 class LibraryPage extends StatefulWidget {
   final bool sortByRating;
-
   const LibraryPage({super.key, this.sortByRating = false});
 
   @override
@@ -29,40 +29,31 @@ class _LibraryPageState extends State<LibraryPage>
   String? _error;
 
   @override
-  void initState() {
-    super.initState();
-    _loadDataOnce();
-  }
+  void initState() { super.initState(); _loadDataOnce(); }
 
   @override
   void didUpdateWidget(LibraryPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.sortByRating != widget.sortByRating) {
-      if (widget.sortByRating && _cachedSorted != null) {
+      if (widget.sortByRating && _cachedSorted != null)
         setState(() => _list = _cachedSorted!);
-      } else if (!widget.sortByRating && _cachedShuffled != null) {
+      else if (!widget.sortByRating && _cachedShuffled != null)
         setState(() => _list = _cachedShuffled!);
-      } else {
-        _loadDataOnce();
-      }
+      else _loadDataOnce();
     }
   }
 
   Future<void> _loadDataOnce() async {
     if (widget.sortByRating && _cachedSorted != null) {
-      setState(() { _list = _cachedSorted!; _loading = false; });
-      return;
+      setState(() { _list = _cachedSorted!; _loading = false; }); return;
     }
     if (!widget.sortByRating && _cachedShuffled != null) {
-      setState(() { _list = _cachedShuffled!; _loading = false; });
-      return;
+      setState(() { _list = _cachedShuffled!; _loading = false; }); return;
     }
-
     try {
       setState(() { _loading = true; _error = null; });
       final list = await _service.fetchMangaList();
       if (!mounted) return;
-
       List<MangaModel> data;
       if (widget.sortByRating) {
         data = [...list]..sort((a, b) => b.rating.compareTo(a.rating));
@@ -71,7 +62,6 @@ class _LibraryPageState extends State<LibraryPage>
         data = [...list]..shuffle();
         _cachedShuffled = data;
       }
-
       setState(() { _list = data; _loading = false; });
     } catch (e) {
       if (mounted) setState(() { _error = e.toString(); _loading = false; });
@@ -81,7 +71,6 @@ class _LibraryPageState extends State<LibraryPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     final provider  = context.watch<AppProvider>();
     final dark      = Theme.of(context).brightness == Brightness.dark;
     final bgColor   = dark ? AppColors.darkBgDeep : AppColors.lightBgDeep;
@@ -96,19 +85,11 @@ class _LibraryPageState extends State<LibraryPage>
           child: _loading
               ? Center(child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5))
               : _error != null
-                  ? Center(
-                      child: Text(
-                        'حدث خطأ في تحميل البيانات',
-                        style: TextStyle(
-                          color: dark ? Colors.white54 : Colors.black54,
-                          fontSize: 13,
-                        ),
-                      ),
-                    )
+                  ? Center(child: Text('حدث خطأ في تحميل البيانات',
+                      style: TextStyle(color: dark ? Colors.white54 : Colors.black54, fontSize: 13)))
                   : CustomScrollView(
                       physics: const BouncingScrollPhysics(),
                       slivers: [
-                        // ===== الهيدر يختفي عند النزول ويرجع عند الصعود =====
                         SliverPersistentHeader(
                           floating: true,
                           delegate: _LibraryHeaderDelegate(
@@ -120,8 +101,7 @@ class _LibraryPageState extends State<LibraryPage>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Container(
-                                    width: 28,
-                                    height: 28,
+                                    width: 28, height: 28,
                                     decoration: BoxDecoration(
                                       color: accentClr.withOpacity(0.18),
                                       borderRadius: BorderRadius.circular(9),
@@ -129,36 +109,25 @@ class _LibraryPageState extends State<LibraryPage>
                                     child: Icon(Icons.grid_view_rounded, size: 14, color: accentClr),
                                   ),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    provider.t('libraryNav'),
-                                    style: TextStyle(
-                                      fontFamily: 'Tajawal',
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w900,
-                                      color: textClr,
-                                    ),
-                                  ),
+                                  Text(provider.t('libraryNav'), style: TextStyle(
+                                    fontFamily: 'Tajawal', fontSize: 17,
+                                    fontWeight: FontWeight.w900, color: textClr,
+                                  )),
                                 ],
                               ),
                             ),
                           ),
                         ),
-
-                        // ===== شبكة المانغا =====
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
                           sliver: SliverGrid(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 14,
-                              childAspectRatio: 110 / 180,
+                              crossAxisCount: 3, crossAxisSpacing: 10,
+                              mainAxisSpacing: 14, childAspectRatio: 110 / 180,
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (ctx, i) => _LibraryCard(
-                                manga: _list[i],
-                                dark: dark,
-                                accent: accentClr,
+                                manga: _list[i], dark: dark, accent: accentClr,
                               ),
                               childCount: _list.length,
                             ),
@@ -172,45 +141,37 @@ class _LibraryPageState extends State<LibraryPage>
   }
 }
 
-// ===== Delegate للهيدر العائم =====
 class _LibraryHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
   final Color bgColor;
-
   const _LibraryHeaderDelegate({required this.child, required this.bgColor});
 
-  @override
-  double get minExtent => 62;
-  @override
-  double get maxExtent => 62;
+  @override double get minExtent => 62;
+  @override double get maxExtent => 62;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) =>
+      SizedBox.expand(child: child);
 
   @override
   bool shouldRebuild(_LibraryHeaderDelegate old) => old.child != child;
 }
 
-// ===== كارد المكتبة المخصص =====
 class _LibraryCard extends StatelessWidget {
   final MangaModel manga;
   final bool dark;
   final Color accent;
 
-  const _LibraryCard({
-    required this.manga,
-    required this.dark,
-    required this.accent,
-  });
+  const _LibraryCard({required this.manga, required this.dark, required this.accent});
 
   @override
   Widget build(BuildContext context) {
     final textClr = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
-
     return GestureDetector(
-      onTap: () => debugPrint('تفاصيل: ${manga.title}'),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => DetailPage(manga: manga)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -220,21 +181,10 @@ class _LibraryCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 color: const Color(0xFF161129),
-                border: Border.all(
-                  color: accent.withOpacity(0.55),
-                  width: 1.5,
-                ),
+                border: Border.all(color: accent.withOpacity(0.55), width: 1.5),
                 boxShadow: [
-                  BoxShadow(
-                    color: accent.withOpacity(0.35),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
+                  BoxShadow(color: accent.withOpacity(0.35), blurRadius: 10, spreadRadius: 1),
+                  BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 8, offset: const Offset(0, 4)),
                 ],
               ),
               child: ClipRRect(
@@ -244,88 +194,49 @@ class _LibraryCard extends StatelessWidget {
                   children: [
                     manga.cover.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: manga.cover,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) =>
-                                Container(color: const Color(0xFF161129)),
+                            imageUrl: manga.cover, fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(color: const Color(0xFF161129)),
                             errorWidget: (_, __, ___) => Container(
                               color: const Color(0xFF161129),
-                              child: const Icon(
-                                Icons.broken_image_outlined,
-                                color: Colors.white24,
-                                size: 22,
-                              ),
+                              child: const Icon(Icons.broken_image_outlined, color: Colors.white24, size: 22),
                             ),
                           )
                         : Container(color: const Color(0xFF161129)),
-
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.65),
-                              Colors.transparent,
-                            ],
+                            begin: Alignment.bottomCenter, end: Alignment.topCenter,
+                            colors: [Colors.black.withOpacity(0.65), Colors.transparent],
                             stops: const [0.0, 0.45],
                           ),
                         ),
                       ),
                     ),
-
-                    // التقييم (أسفل اليسار)
                     Positioned(
-                      bottom: 8,
-                      left: 8,
+                      bottom: 8, left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.75),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(0xFFE8B85C).withOpacity(0.6),
-                            width: 1,
-                          ),
+                          border: Border.all(color: const Color(0xFFE8B85C).withOpacity(0.6), width: 1),
                         ),
-                        child: Text(
-                          '${manga.rating.toStringAsFixed(1)} ★',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFFE8B85C),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: Text('${manga.rating.toStringAsFixed(1)} ★',
+                            style: const TextStyle(fontSize: 10, color: Color(0xFFE8B85C), fontWeight: FontWeight.bold)),
                       ),
                     ),
-
-                    // القلب (أعلى اليمين)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 8, right: 8,
                       child: Container(
-                        width: 28,
-                        height: 28,
+                        width: 28, height: 28,
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.5),
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: accent.withOpacity(0.6),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: accent.withOpacity(0.35),
-                              blurRadius: 6,
-                            ),
-                          ],
+                          border: Border.all(color: accent.withOpacity(0.6), width: 1.2),
+                          boxShadow: [BoxShadow(color: accent.withOpacity(0.35), blurRadius: 6)],
                         ),
-                        child: Icon(
-                          Icons.favorite_border_rounded,
-                          color: Colors.white.withOpacity(0.9),
-                          size: 14,
-                        ),
+                        child: Icon(Icons.favorite_border_rounded, color: Colors.white.withOpacity(0.9), size: 14),
                       ),
                     ),
                   ],
@@ -336,16 +247,8 @@ class _LibraryCard extends StatelessWidget {
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Text(
-              manga.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: textClr,
-              ),
-            ),
+            child: Text(manga.title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textClr)),
           ),
         ],
       ),

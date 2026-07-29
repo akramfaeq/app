@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/manga_model.dart';
 import '../../services/manga_service.dart';
+import '../../models/chapter_model.dart';
 
 class DetailPage extends StatefulWidget {
   final MangaModel manga;
@@ -240,8 +241,7 @@ class _DetailPageState extends State<DetailPage> {
                       children: [
                         _InfoCard(
                           label: 'الفصول',
-                          value: widget.manga.chapters.toString(),
-                          dark: dark, cardBg: cardBg, textClr: textClr,
+value: widget.manga.chaptersCount.toString(),                          dark: dark, cardBg: cardBg, textClr: textClr,
                         ),
                         const SizedBox(width: 8),
                         _InfoCard(
