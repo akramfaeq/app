@@ -61,12 +61,17 @@ class _DetailPageState extends State<DetailPage> {
     return list;
   }
 
+  // ─── فتح القارئ ───
   void _openReader(ChapterModel chapter) {
+    // رتّب الفصول تصاعدياً (مطلوب من ReaderPage)
+    final sortedAsc = [..._chapters]
+      ..sort((a, b) => a.number.compareTo(b.number));
+    final idx = sortedAsc.indexWhere((c) => c.number == chapter.number);
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => ReaderPage(
         manga: widget.manga,
-        chapter: chapter,
-        allChapters: _chapters,
+        allChapters: sortedAsc,
+        initialChapterIndex: idx == -1 ? 0 : idx,
       ),
     ));
   }
@@ -193,89 +198,101 @@ class _DetailPageState extends State<DetailPage> {
                       ],
                     ),
                     const SizedBox(height: 22),
+                    // ─── قسم الفصول ───
                     Container(
-                      decoration: BoxDecoration(
-                        color: dark ? const Color(0x801A1625) : Colors.white.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: accent.withOpacity(0.1)),
-                      ),
                       padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.06)),
+                      ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // هيدر الفصول
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('الفصول', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textClr)),
+                              Text('الفصول',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: textClr)),
+                              const Spacer(),
+                              // زر الترتيب
                               GestureDetector(
-                                onTap: () { HapticFeedback.selectionClick(); setState(() => _sortDescending = !_sortDescending); },
-                                child: AnimatedRotation(
-                                  turns: _sortDescending ? 0 : 0.5,
-                                  duration: const Duration(milliseconds: 250),
-                                  child: Container(
-                                    width: 34, height: 34,
-                                    decoration: BoxDecoration(
-                                      color: cardBg, borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: accent.withOpacity(0.15)),
-                                    ),
-                                    child: Icon(Icons.sort_rounded, size: 18, color: subClr),
+                                onTap: () => setState(() => _sortDescending = !_sortDescending),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: accent.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: accent.withOpacity(0.2)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(_sortDescending
+                                          ? Icons.arrow_downward_rounded
+                                          : Icons.arrow_upward_rounded,
+                                          size: 12, color: accent),
+                                      const SizedBox(width: 4),
+                                      Text(_sortDescending ? 'الأحدث' : 'الأقدم',
+                                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: accent)),
+                                    ],
                                   ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
+                          // بحث
                           Container(
-                            height: 42,
+                            height: 40,
                             decoration: BoxDecoration(
-                              color: dark ? AppColors.darkBgDeep : const Color(0xFFF0F1F7),
-                              borderRadius: BorderRadius.circular(25),
+                              color: dark ? const Color(0xFF1A1622) : const Color(0xFFF5F5FA),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: accent.withOpacity(0.15)),
                             ),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 14),
-                                Icon(Icons.search_rounded, size: 16, color: subClr),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _searchCtrl,
-                                    keyboardType: TextInputType.number,
-                                    style: TextStyle(color: textClr, fontSize: 13),
-                                    decoration: InputDecoration(
-                                      hintText: 'ابحث برقم الفصل...',
-                                      hintStyle: TextStyle(color: subClr, fontSize: 13),
-                                      border: InputBorder.none, isDense: true,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            child: TextField(
+                              controller: _searchCtrl,
+                              textAlign: TextAlign.right,
+                              style: TextStyle(fontSize: 13, color: textClr),
+                              decoration: InputDecoration(
+                                hintText: 'ابحث عن فصل...',
+                                hintStyle: TextStyle(fontSize: 12, color: subClr),
+                                hintTextDirection: TextDirection.rtl,
+                                prefixIcon: Icon(Icons.search_rounded, size: 16, color: subClr),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
+                          // قائمة الفصول
                           if (_loadingChapters)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Center(child: CircularProgressIndicator(color: accent, strokeWidth: 2)),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: CircularProgressIndicator(color: accent, strokeWidth: 2),
+                              ),
                             )
                           else if (_filteredChapters.isEmpty)
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Text('لا توجد فصول مطابقة',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: subClr, fontSize: 13)),
+                              padding: const EdgeInsets.all(24),
+                              child: Center(
+                                child: Text('لا توجد فصول', style: TextStyle(color: subClr, fontSize: 13)),
+                              ),
                             )
                           else
                             ...() {
-                              final toShow = _searchQuery.isNotEmpty
-                                  ? _filteredChapters
-                                  : _filteredChapters.take(_visibleCount).toList();
+                              final visible = _filteredChapters.take(_visibleCount).toList();
                               return [
-                                ...toShow.map((ch) => _ChapterItem(
-                                  chapter: ch, dark: dark, accent: accent,
-                                  cardBg: cardBg, textClr: textClr, subClr: subClr,
+                                ...visible.map((ch) => _ChapterItem(
+                                  chapter: ch,
+                                  dark: dark,
+                                  accent: accent,
+                                  cardBg: cardBg,
+                                  textClr: textClr,
+                                  subClr: subClr,
                                   onTap: () => _openReader(ch),
                                 )),
-                                if (_searchQuery.isEmpty && _filteredChapters.length > _visibleCount)
+                                if (_visibleCount < _filteredChapters.length)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 6),
                                     child: GestureDetector(
@@ -363,7 +380,7 @@ class _HeroCover extends StatelessWidget {
           ),
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
-            right: 16,
+            left: 16,
             child: GestureDetector(
               onTap: onBack,
               child: Container(
@@ -374,7 +391,7 @@ class _HeroCover extends StatelessWidget {
                   border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.25)),
                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 14)],
                 ),
-                child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                child: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
               ),
             ),
           ),
