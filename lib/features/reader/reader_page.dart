@@ -168,6 +168,7 @@ class _ReaderPageState extends State<ReaderPage> {
       mangaCover: widget.manga.cover,
       chapterId: _chapter.number.toString(),
       chapterNumber: _chapter.number,
+      totalChapters: widget.manga.chaptersCount,
       pageIndex: pageIdx,
       pageUrl: pageIdx < pages.length ? pages[pageIdx] : '',
       progress: _progress,

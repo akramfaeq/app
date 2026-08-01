@@ -6,6 +6,7 @@ import '../../core/theme/app_provider.dart';
 import '../../features/home/home_page.dart';
 import '../../features/library/library_page.dart';
 import '../../features/search/search_page.dart';
+import '../../features/more/more_page.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -21,10 +22,8 @@ class _MainScaffoldState extends State<MainScaffold> {
     setState(() {
       _index = index;
       if (index == 1) {
-        // ✅ فقط لما يجي من "الأعلى تقييماً" نرتب — وإلا نبقى عشوائي
         _librarySortByRating = sortByRating;
       }
-      // ✅ لما يضغط الرئيسية من BottomNav نرجع المكتبة عشوائية
       if (index == 0) {
         _librarySortByRating = false;
       }
@@ -44,10 +43,9 @@ class _MainScaffoldState extends State<MainScaffold> {
         index: _index,
         children: [
           HomePage(onNavigate: _nav),
-          // ✅ بدون Key — المكتبة تبقى محفوظة في الذاكرة دائماً
           LibraryPage(sortByRating: _librarySortByRating),
           const SearchPage(),
-          _PlaceholderPage(label: provider.t('more'), icon: Icons.more_horiz_rounded, dark: dark),
+          const MorePage(),
         ],
       ),
       bottomNavigationBar: Container(
@@ -89,7 +87,6 @@ class _MainScaffoldState extends State<MainScaffold> {
                     isActive: _index == 1,
                     selectedClr: selectedClr,
                     unselectedClr: unselectedClr,
-                    // ✅ الضغط من BottomNav = عشوائي دائماً
                     onTap: () => _nav(1, sortByRating: false),
                   ),
                   _NavItem(
@@ -163,32 +160,6 @@ class _NavItem extends StatelessWidget {
                 boxShadow: isActive ? [BoxShadow(color: selectedClr, blurRadius: 16)] : null,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderPage extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool dark;
-  const _PlaceholderPage({required this.label, required this.icon, required this.dark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: dark ? AppColors.darkBgDeep : AppColors.lightBgDeep,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48, color: Colors.white24),
-            const SizedBox(height: 12),
-            Text(label, style: const TextStyle(color: Colors.white38, fontSize: 14)),
-            const SizedBox(height: 8),
-            const Text('قريباً...', style: TextStyle(color: Colors.white24, fontSize: 12)),
           ],
         ),
       ),

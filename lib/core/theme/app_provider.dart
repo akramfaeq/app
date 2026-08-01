@@ -6,7 +6,7 @@ class AppProvider extends ChangeNotifier {
   static const _langKey  = 'app_lang';
 
   bool   _isLightTheme = false;
-  String _lang = 'ar'; // 'ar' | 'en'
+  String _lang = 'ar';
 
   bool   get isLightTheme => _isLightTheme;
   String get lang          => _lang;
@@ -37,7 +37,6 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// ترجمة بسيطة
   String t(String key) => _translations[_lang]?[key] ?? _translations['ar']![key] ?? key;
 
   static const _translations = {
@@ -56,6 +55,19 @@ class AppProvider extends ChangeNotifier {
       'older': 'أقدم',
       'loading': 'جاري التحميل...',
       'error': 'حدث خطأ، حاول مجدداً',
+      // more page
+      'more_title': 'المزيد',
+      'account': 'تسجيل الدخول',
+      'account_sub': 'أنشئ حسابك أو سجّل دخولك',
+      'app_settings': 'إعدادات التطبيق',
+      'language': 'اللغة',
+      'language_current': 'عربي',
+      'language_switch': 'English',
+      'day_mode': 'الوضع النهاري',
+      'day_mode_sub': 'اضغط للتفعيل',
+      'about': 'عن التطبيق',
+      'version': 'الإصدار 1.0.0',
+      'contact': 'Contact Us',
     },
     'en': {
       'home': 'Home',
@@ -72,6 +84,19 @@ class AppProvider extends ChangeNotifier {
       'older': 'Older',
       'loading': 'Loading...',
       'error': 'Something went wrong, try again',
+      // more page
+      'more_title': 'More',
+      'account': 'Sign In',
+      'account_sub': 'Create an account or sign in',
+      'app_settings': 'App Settings',
+      'language': 'Language',
+      'language_current': 'English',
+      'language_switch': 'عربي',
+      'day_mode': 'Light Mode',
+      'day_mode_sub': 'Tap to enable',
+      'about': 'About',
+      'version': 'Version 1.0.0',
+      'contact': 'Contact Us',
     },
   };
 }
