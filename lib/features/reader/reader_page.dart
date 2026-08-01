@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/manga_model.dart';
 import '../../models/chapter_model.dart';
+import '../../services/reading_progress_service.dart';
 
 // ═══════════════════════════════════════════════════════════════
 //  ReaderPage — قارئ المانغا
@@ -20,12 +21,14 @@ class ReaderPage extends StatefulWidget {
   final MangaModel manga;
   final List<ChapterModel> allChapters; // مرتبة تصاعدياً
   final int initialChapterIndex;
+  final int initialPageIndex;
 
   const ReaderPage({
     super.key,
     required this.manga,
     required this.allChapters,
     required this.initialChapterIndex,
+    this.initialPageIndex = 0,
   });
 
   @override
@@ -45,6 +48,12 @@ class _ReaderPageState extends State<ReaderPage> {
   final _horizScrollCtrl = ScrollController();
   Timer? _hideTimer;
 
+  // ── عداد وقت القراءة ──
+  Timer? _readingTimer;
+  int _secondsRead = 0;
+  static const _minSeconds = 9;      // الحد الأدنى للحفظ
+  static const _maxProgress = 0.95;  // ما نحفظ إذا اكتمل 95%
+
   ChapterModel get _chapter => widget.allChapters[_chapterIdx];
   bool get _hasPrev => _chapterIdx > 0;
   bool get _hasNext => _chapterIdx < widget.allChapters.length - 1;
@@ -63,10 +72,28 @@ class _ReaderPageState extends State<ReaderPage> {
   void initState() {
     super.initState();
     _chapterIdx = widget.initialChapterIndex;
+    _currentPageIndex = widget.initialPageIndex;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _vertScrollCtrl.addListener(_onVerticalScroll);
     _horizScrollCtrl.addListener(_onHorizontalScroll);
     _startHideTimer();
+    _startReadingTimer();
+
+    // اذا فيه صفحة محفوظة، اسكرول لها بعد البناء
+    if (widget.initialPageIndex > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final pages = _chapter.pageUrls;
+        if (pages.isEmpty) return;
+        final pct = widget.initialPageIndex / (pages.length - 1).clamp(1, pages.length);
+        if (_mode == ReadingMode.vertical && _vertScrollCtrl.hasClients) {
+          final max = _vertScrollCtrl.position.maxScrollExtent;
+          _vertScrollCtrl.jumpTo((pct * max).clamp(0, max));
+        } else if (_horizScrollCtrl.hasClients) {
+          final max = _horizScrollCtrl.position.maxScrollExtent;
+          _horizScrollCtrl.jumpTo((pct * max).clamp(0, max));
+        }
+      });
+    }
   }
 
   @override
@@ -75,6 +102,7 @@ class _ReaderPageState extends State<ReaderPage> {
     _vertScrollCtrl.dispose();
     _horizScrollCtrl.dispose();
     _hideTimer?.cancel();
+    _readingTimer?.cancel();
     super.dispose();
   }
 
@@ -111,7 +139,41 @@ class _ReaderPageState extends State<ReaderPage> {
     });
   }
 
-  // ══════════════ Bars ══════════════
+  // ══════════════ Reading Timer ══════════════
+
+  void _startReadingTimer() {
+    _secondsRead = 0;
+    _readingTimer?.cancel();
+    _readingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _secondsRead++;
+      if (_secondsRead >= _minSeconds) {
+        _trySaveProgress();
+      }
+    });
+  }
+
+  void _trySaveProgress() {
+    // لا تحفظ إذا وصل 95% أو أكثر (اكتمل الفصل)
+    if (_progress >= _maxProgress) return;
+
+    final pages = _chapter.pageUrls;
+    if (pages.isEmpty) return;
+
+    final pageIdx = _currentPageIndex.clamp(0, pages.length - 1);
+    final pageUrl = pages[pageIdx];
+
+    ReadingProgressService.save(ReadingProgress(
+      mangaId: widget.manga.id,
+      mangaTitle: widget.manga.title,
+      mangaCover: widget.manga.cover,
+      chapterId: _chapter.number.toString(),
+      chapterNumber: _chapter.number,
+      pageIndex: pageIdx,
+      pageUrl: pageIdx < pages.length ? pages[pageIdx] : '',
+      progress: _progress,
+      savedAt: DateTime.now(),
+    ));
+  }
 
   void _showBars() {
     if (!mounted) return;
@@ -148,6 +210,7 @@ class _ReaderPageState extends State<ReaderPage> {
       _currentPageIndex = 0;
       _chaptersDropOpen = false;
     });
+    _startReadingTimer(); // ابدأ العداد من جديد للفصل الجديد
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_mode == ReadingMode.vertical && _vertScrollCtrl.hasClients) {
         _vertScrollCtrl.jumpTo(0);

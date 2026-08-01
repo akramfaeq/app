@@ -5,7 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../models/manga_model.dart';
 import '../../models/chapter_model.dart';
 import '../../services/manga_service.dart';
-import '../reader/reader_page.dart';
+import 'package:manga_nova/features/reader/reader_page.dart';
 
 class DetailPage extends StatefulWidget {
   final MangaModel manga;
@@ -243,24 +243,63 @@ class _DetailPageState extends State<DetailPage> {
                           const SizedBox(height: 12),
                           // بحث
                           Container(
-                            height: 40,
+                            height: 46,
                             decoration: BoxDecoration(
                               color: dark ? const Color(0xFF1A1622) : const Color(0xFFF5F5FA),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: accent.withOpacity(0.15)),
                             ),
-                            child: TextField(
-                              controller: _searchCtrl,
-                              textAlign: TextAlign.right,
-                              style: TextStyle(fontSize: 13, color: textClr),
-                              decoration: InputDecoration(
-                                hintText: 'ابحث عن فصل...',
-                                hintStyle: TextStyle(fontSize: 12, color: subClr),
-                                hintTextDirection: TextDirection.rtl,
-                                prefixIcon: Icon(Icons.search_rounded, size: 16, color: subClr),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                              ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // أيقونة البحث يسار
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: Icon(Icons.search_rounded, size: 18, color: _searchQuery.isNotEmpty ? accent : subClr),
+                                ),
+                                // حقل النص
+                                Expanded(
+                                  child: TextField(
+                                    controller: _searchCtrl,
+                                    textAlign: TextAlign.right,
+                                    textAlignVertical: TextAlignVertical.center,
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    onChanged: (val) => setState(() => _searchQuery = val.trim()),
+                                    style: TextStyle(fontSize: 13, color: textClr),
+                                    decoration: InputDecoration(
+                                      hintText: 'ابحث عن فصل...',
+                                      hintStyle: TextStyle(fontSize: 12, color: subClr),
+                                      hintTextDirection: TextDirection.rtl,
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                      isCollapsed: true,
+                                      suffixIcon: _searchQuery.isNotEmpty
+                                          ? GestureDetector(
+                                              onTap: () {
+                                                _searchCtrl.clear();
+                                                setState(() => _searchQuery = '');
+                                              },
+                                              child: Container(
+                                                margin: const EdgeInsets.all(6),
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: subClr.withOpacity(0.25),
+                                                ),
+                                                child: Icon(Icons.close_rounded, size: 12, color: subClr),
+                                              ),
+                                            )
+                                          : null,
+                                      suffixIconConstraints: const BoxConstraints(
+                                        minWidth: 30, minHeight: 30,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 12),

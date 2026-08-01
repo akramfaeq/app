@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/manga_model.dart';
 import '../../services/manga_service.dart';
+import '../../services/reading_progress_service.dart';
 import '../../shared/widgets/manga_card.dart';
+import '../../shared/widgets/continue_reading_card.dart';
 import '../details/detail_page.dart';
+import '../reader/reader_page.dart';
 
 class HomePage extends StatefulWidget {
   final void Function(int, {bool sortByRating})? onNavigate;
@@ -19,6 +22,7 @@ class _HomePageState extends State<HomePage>
   bool get wantKeepAlive => true;
 
   final _service = MangaService();
+  final _continueKey = GlobalKey<ContinueReadingCardState>();
   List<MangaModel> _list = [];
   List<MangaModel> _latestReleases = [];
   List<MangaModel> _topRated = [];
@@ -54,6 +58,38 @@ class _HomePageState extends State<HomePage>
     Navigator.push(context, MaterialPageRoute(builder: (_) => DetailPage(manga: manga)));
   }
 
+  Future<void> _openFromProgress(ReadingProgress progress) async {
+    // جيب المانغا من القائمة
+    final manga = _list.firstWhere(
+      (m) => m.id == progress.mangaId,
+      orElse: () => _list.first,
+    );
+
+    // جيب الفصول
+    final chapters = await _service.fetchChapters(manga.id);
+    if (!mounted) return;
+
+    // لقي index الفصل
+    final chapterIdx = chapters.indexWhere(
+      (c) => c.number.toString() == progress.chapterId,
+    );
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReaderPage(
+          manga: manga,
+          allChapters: chapters,
+          initialChapterIndex: chapterIdx < 0 ? 0 : chapterIdx,
+          initialPageIndex: progress.pageIndex,
+        ),
+      ),
+    );
+
+    // بعد الرجوع — حدّث البطاقة
+    _continueKey.currentState?.refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -67,6 +103,15 @@ class _HomePageState extends State<HomePage>
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(child: _topBar(dark)),
+
+            // ── بطاقة أكمل القراءة ──
+            SliverToBoxAdapter(
+              child: ContinueReadingCard(
+                key: _continueKey,
+                onTap: _openFromProgress,
+              ),
+            ),
+
             if (_loading)
               SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5)),
