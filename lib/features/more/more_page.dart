@@ -12,62 +12,66 @@ class MorePage extends StatefulWidget {
 
 class _MorePageState extends State<MorePage> {
 
-  static const _bg        = Color(0xFF0A0714);
-  static const _card      = Color(0xFF130F1E);
-  static const _accent    = Color(0xFF9B5CF6);
+  static const _bg         = Color(0xFF0A0714);
+  static const _card       = Color(0xFF130F1E);
+  static const _accent     = Color(0xFF9B5CF6);
   static const _accentNeon = Color(0xFFBF5FFF);
   static const _textPrimary = Color(0xFFF0EEFF);
-  static const _textSub   = Color(0xFF7A728E);
-  static const _gold      = Color(0xFFE8B85C);
+  static const _textSub    = Color(0xFF7A728E);
+  static const _gold       = Color(0xFFE8B85C);
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
-    final t = provider.t;
+    final t        = provider.t;
+    final dir      = provider.dir;
 
-    return Scaffold(
-      backgroundColor: _bg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return Directionality(
+      textDirection: dir,
+      child: Scaffold(
+        backgroundColor: _bg,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
-              // هيدر
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
-                child: Text(t('more_title'),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: _textPrimary)),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    _buildAccountCard(t),
-                    const SizedBox(height: 10),
-
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(t('app_settings'),
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _textSub)),
-                    ),
-
-                    _buildSettingsCard(provider, t),
-                    const SizedBox(height: 16),
-
-                    _buildAboutCard(t),
-                    const SizedBox(height: 10),
-
-                    _buildContactCard(),
-                    const SizedBox(height: 20),
-                  ],
+                // هيدر
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
+                  child: Text(t('more_title'),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: _textPrimary)),
                 ),
-              ),
-            ],
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      _buildAccountCard(t),
+                      const SizedBox(height: 10),
+
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(t('app_settings'),
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _textSub)),
+                      ),
+
+                      _buildSettingsCard(provider, t),
+                      const SizedBox(height: 16),
+
+                      _buildAboutCard(t),
+                      const SizedBox(height: 10),
+
+                      _buildContactCard(t),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -205,7 +209,7 @@ class _MorePageState extends State<MorePage> {
   }
 
   // ── تواصل معنا ──
-  Widget _buildContactCard() {
+  Widget _buildContactCard(String Function(String) t) {
     return Container(
       decoration: BoxDecoration(
         color: _card,
@@ -213,13 +217,12 @@ class _MorePageState extends State<MorePage> {
         border: Border.all(color: _accent.withOpacity(0.15)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Text('Contact Us',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _textSub),
-              textDirection: TextDirection.ltr),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Text(t('contact_us'),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _textSub)),
           ),
           Padding(
             padding: const EdgeInsets.all(14),
@@ -333,113 +336,112 @@ class _MorePageState extends State<MorePage> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => Container(
-        margin: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _accentNeon.withOpacity(0.2)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 60)],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: _accentNeon.withOpacity(0.1))),
+      builder: (_) => Directionality(
+        textDirection: context.read<AppProvider>().dir,
+        child: Container(
+          margin: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _accentNeon.withOpacity(0.2)),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 60)],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: _accentNeon.withOpacity(0.1))),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(color: _gold.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(Icons.info_outline_rounded, color: _gold, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(t('about'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _textPrimary)),
+                          Text(t('version'), style: const TextStyle(fontSize: 11, color: _textSub)),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 30, height: 30,
+                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(8)),
+                        child: const Icon(Icons.close_rounded, color: _textSub, size: 16),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(color: _gold.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.info_outline_rounded, color: _gold, size: 18),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(t('about'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _textPrimary)),
-                        Text(t('version'), style: const TextStyle(fontSize: 11, color: _textSub)),
-                      ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(fontSize: 13, color: _textSub, height: 1.7),
+                        children: [
+                          const TextSpan(text: 'Manga Nova ', style: TextStyle(color: _textPrimary, fontWeight: FontWeight.w700)),
+                          TextSpan(text: t('about_desc')),
+                        ],
+                      ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 30, height: 30,
-                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.close_rounded, color: _textSub, size: 16),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: _accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(t('features_title'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textPrimary)),
+                          const SizedBox(height: 8),
+                          Text(t('feature_1'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
+                          Text(t('feature_2'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
+                          Text(t('feature_3'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
+                          Text(t('feature_4'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
+                          Text(t('feature_5'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF4081).withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: const Border(right: BorderSide(color: Color(0xFFFF4081), width: 3)),
+                      ),
+                      child: Text(t('disclaimer'),
+                        style: const TextStyle(fontSize: 12, color: _textSub, height: 1.6)),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: _accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(t('dev_title'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textPrimary)),
+                          const SizedBox(height: 6),
+                          Text(t('dev_names'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _accent)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RichText(
-                    textDirection: TextDirection.rtl,
-                    text: const TextSpan(
-                      style: TextStyle(fontSize: 13, color: _textSub, height: 1.7),
-                      children: [
-                        TextSpan(text: 'Manga Nova ', style: TextStyle(color: _textPrimary, fontWeight: FontWeight.w700)),
-                        TextSpan(text: 'تطبيق متكامل لقراءة المانجا، يوفر تجربة سلسة وسريعة مع واجهة عصرية مصممة خصيصاً لعشاق القصص المصورة.'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: _accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('✨ ميزات التطبيق', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textPrimary)),
-                        SizedBox(height: 8),
-                        Text('🌓 دعم الوضع الداكن والنهاري', style: TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                        Text('📚 مكتبة شخصية بتصنيفات متعددة', style: TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                        Text('🔖 حفظ تقدم القراءة والمفضلة', style: TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                        Text('↕️ قارئ بوضعين عمودي وأفقي', style: TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                        Text('⭐ نظام تقييم ومتابعة الإصدارات', style: TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF4081).withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(8),
-                      border: const Border(right: BorderSide(color: Color(0xFFFF4081), width: 3)),
-                    ),
-                    child: const Text(
-                      '⚠️ إخلاء المسؤولية: جميع المحتويات والترجمات والمواد المعروضة في هذا التطبيق هي ملك حصري لأصحابها وصانعيها الأصليين.',
-                      style: TextStyle(fontSize: 12, color: _textSub, height: 1.6),
-                      textDirection: TextDirection.rtl,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: _accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('💻 التطوير', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textPrimary)),
-                        SizedBox(height: 6),
-                        Text('أكرم فائق & يوسف سفيان', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _accent)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

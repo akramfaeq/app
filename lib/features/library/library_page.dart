@@ -72,20 +72,22 @@ class _LibraryPageState extends State<LibraryPage>
   Widget build(BuildContext context) {
     super.build(context);
     final provider  = context.watch<AppProvider>();
+    final t         = provider.t;
+    final dir       = provider.dir;
     final dark      = Theme.of(context).brightness == Brightness.dark;
     final bgColor   = dark ? AppColors.darkBgDeep : AppColors.lightBgDeep;
     final accentClr = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
     final textClr   = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: SafeArea(
-        child: Directionality(
-          textDirection: TextDirection.rtl,
+    return Directionality(
+      textDirection: dir,
+      child: Scaffold(
+        backgroundColor: bgColor,
+        body: SafeArea(
           child: _loading
               ? Center(child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5))
               : _error != null
-                  ? Center(child: Text('حدث خطأ في تحميل البيانات',
+                  ? Center(child: Text(t('error_loading'),
                       style: TextStyle(color: dark ? Colors.white54 : Colors.black54, fontSize: 13)))
                   : CustomScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -109,7 +111,7 @@ class _LibraryPageState extends State<LibraryPage>
                                     child: Icon(Icons.grid_view_rounded, size: 14, color: accentClr),
                                   ),
                                   const SizedBox(width: 8),
-                                  Text(provider.t('libraryNav'), style: TextStyle(
+                                  Text(t('libraryNav'), style: TextStyle(
                                     fontFamily: 'Tajawal', fontSize: 17,
                                     fontWeight: FontWeight.w900, color: textClr,
                                   )),

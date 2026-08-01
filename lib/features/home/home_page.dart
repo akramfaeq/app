@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_provider.dart';
 import '../../models/manga_model.dart';
 import '../../services/manga_service.dart';
 import '../../services/reading_progress_service.dart';
@@ -59,21 +61,15 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _openFromProgress(ReadingProgress progress) async {
-    // جيب المانغا من القائمة
     final manga = _list.firstWhere(
       (m) => m.id == progress.mangaId,
       orElse: () => _list.first,
     );
-
-    // جيب الفصول
     final chapters = await _service.fetchChapters(manga.id);
     if (!mounted) return;
-
-    // لقي index الفصل
     final chapterIdx = chapters.indexWhere(
       (c) => c.number.toString() == progress.chapterId,
     );
-
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -85,66 +81,77 @@ class _HomePageState extends State<HomePage>
         ),
       ),
     );
-
-    // بعد الرجوع — حدّث البطاقة
     _continueKey.currentState?.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final provider  = context.watch<AppProvider>();
+    final t         = provider.t;
+    final dir       = provider.dir;
+    final dark      = Theme.of(context).brightness == Brightness.dark;
     final accentClr = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
 
-    return Scaffold(
-      backgroundColor: dark ? AppColors.darkBgDeep : AppColors.lightBgDeep,
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(child: _topBar(dark)),
+    return Directionality(
+      textDirection: dir,
+      child: Scaffold(
+        backgroundColor: dark ? AppColors.darkBgDeep : AppColors.lightBgDeep,
+        body: SafeArea(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: _topBar(dark, provider)),
 
-            // ── بطاقة أكمل القراءة ──
-            SliverToBoxAdapter(
-              child: ContinueReadingCard(
-                key: _continueKey,
-                onTap: _openFromProgress,
+              // ── بطاقة أكمل القراءة ──
+              SliverToBoxAdapter(
+                child: ContinueReadingCard(
+                  key: _continueKey,
+                  onTap: _openFromProgress,
+                ),
               ),
-            ),
 
-            if (_loading)
-              SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5)),
-              )
-            else if (_error != null)
-              const SliverFillRemaining(
-                child: Center(child: Text('حدث خطأ في تحميل البيانات', style: TextStyle(color: Colors.white54))),
-              )
-            else ...[
-              SliverToBoxAdapter(child: _section(dark, 'آخر الإصدارات', Icons.access_time_rounded,
-                  const Color(0xFF8B5CF6), const Color(0x338B5CF6), _latestReleases,
-                  () => widget.onNavigate?.call(0))),
-              SliverToBoxAdapter(child: _section(dark, 'الأعلى تقييماً', Icons.star_rounded,
-                  AppColors.starColor, const Color(0x33E8B85C), _topRated,
-                  () => widget.onNavigate?.call(1, sortByRating: true))),
-              SliverToBoxAdapter(child: _section(dark, 'مكتبة المانغا', null, null, null,
-                  _randomManga, () => widget.onNavigate?.call(1))),
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              if (_loading)
+                SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5)),
+                )
+              else if (_error != null)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Text(t('error_loading'),
+                      style: const TextStyle(color: Colors.white54)),
+                  ),
+                )
+              else ...[
+                SliverToBoxAdapter(child: _section(dark, provider, t('latest_releases'),
+                    Icons.access_time_rounded, const Color(0xFF8B5CF6), const Color(0x338B5CF6),
+                    _latestReleases, () => widget.onNavigate?.call(0))),
+                SliverToBoxAdapter(child: _section(dark, provider, t('top_rated'),
+                    Icons.star_rounded, AppColors.starColor, const Color(0x33E8B85C),
+                    _topRated, () => widget.onNavigate?.call(1, sortByRating: true))),
+                SliverToBoxAdapter(child: _section(dark, provider, t('manga_library'),
+                    null, null, null,
+                    _randomManga, () => widget.onNavigate?.call(1))),
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _topBar(bool dark) {
+  Widget _topBar(bool dark, AppProvider provider) {
     final accent   = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
     final neonGlow = dark ? const Color(0x40BF5FFF) : const Color(0x305B5BD6);
     final textClr  = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
+    final isAr     = provider.isArabic;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
-        textDirection: TextDirection.ltr,
+        // الأفاتار دايماً على اليسار، الاسم على اليمين — نعكسها حسب اللغة
+        textDirection: isAr ? TextDirection.ltr : TextDirection.rtl,
         children: [
           GestureDetector(
             onTap: () => widget.onNavigate?.call(3),
@@ -175,10 +182,12 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _section(bool dark, String title, IconData? icon, Color? iconClr,
-      Color? iconBg, List<MangaModel> items, VoidCallback onSeeAll) {
+  Widget _section(bool dark, AppProvider provider, String title, IconData? icon,
+      Color? iconClr, Color? iconBg, List<MangaModel> items, VoidCallback onSeeAll) {
     final accent   = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
     final titleClr = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
+    final t        = provider.t;
+
     return Padding(
       padding: const EdgeInsets.only(top: 20),
       child: Column(
@@ -187,7 +196,8 @@ class _HomePageState extends State<HomePage>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              textDirection: TextDirection.rtl,
+              // العنوان على اليمين دائماً، "عرض الكل" على اليسار
+              textDirection: provider.dir,
               children: [
                 if (icon != null) ...[
                   Container(
@@ -201,7 +211,8 @@ class _HomePageState extends State<HomePage>
                 const Spacer(),
                 GestureDetector(
                   onTap: onSeeAll,
-                  child: Text('عرض الكل', style: TextStyle(fontSize: 13, color: accent, fontWeight: FontWeight.w600)),
+                  child: Text(t('see_all'),
+                    style: TextStyle(fontSize: 13, color: accent, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -210,14 +221,17 @@ class _HomePageState extends State<HomePage>
           SizedBox(
             height: kCardH + 45,
             child: Directionality(
-              textDirection: TextDirection.rtl,
+              // قائمة المانغا تبدأ من اليمين بالعربي ومن اليسار بالإنجليزي
+              textDirection: provider.dir,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: items.length,
                 itemBuilder: (ctx, i) => Padding(
-                  padding: const EdgeInsets.only(left: 10),
+                  padding: provider.isArabic
+                      ? const EdgeInsets.only(left: 10)
+                      : const EdgeInsets.only(right: 10),
                   child: MangaCard(
                     manga: items[i],
                     onTap: () => _goToDetail(ctx, items[i]),

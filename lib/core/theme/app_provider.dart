@@ -2,101 +2,150 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppProvider extends ChangeNotifier {
-  static const _themeKey = 'manga_theme';
-  static const _langKey  = 'app_lang';
-
-  bool   _isLightTheme = false;
+  bool _isLightTheme = false;
   String _lang = 'ar';
 
-  bool   get isLightTheme => _isLightTheme;
-  String get lang          => _lang;
-  bool   get isArabic      => _lang == 'ar';
+  bool get isLightTheme => _isLightTheme;
+  bool get isArabic => _lang == 'ar';
+  String get lang => _lang;
+  TextDirection get dir => _lang == 'ar' ? TextDirection.rtl : TextDirection.ltr;
 
   AppProvider() {
-    _loadPrefs();
+    _load();
   }
 
-  Future<void> _loadPrefs() async {
+  Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    _isLightTheme = prefs.getString(_themeKey) == 'light';
-    _lang         = prefs.getString(_langKey) ?? 'ar';
+    _isLightTheme = prefs.getBool('isLightTheme') ?? false;
+    _lang = prefs.getString('app_lang') ?? 'ar';
     notifyListeners();
   }
 
   Future<void> toggleTheme() async {
     _isLightTheme = !_isLightTheme;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeKey, _isLightTheme ? 'light' : 'dark');
+    await prefs.setBool('isLightTheme', _isLightTheme);
     notifyListeners();
   }
 
   Future<void> changeLanguage(String lang) async {
     _lang = lang;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_langKey, lang);
+    await prefs.setString('app_lang', lang);
     notifyListeners();
   }
 
-  String t(String key) => _translations[_lang]?[key] ?? _translations['ar']![key] ?? key;
+  // ─── دالة الترجمة ───
+  String t(String key) {
+    return (_translations[_lang]?[key]) ?? (_translations['ar']?[key]) ?? key;
+  }
 
-  static const _translations = {
+  static const Map<String, Map<String, String>> _translations = {
     'ar': {
-      'home': 'الرئيسية',
-      'library': 'المكتبة',
-      'search': 'البحث',
-      'more': 'المزيد',
-      'latestReleases': 'آخر الإصدارات',
-      'topRated': 'الأعلى تقييماً',
-      'libraryNav': 'مكتبة المانغا',
-      'seeAll': 'عرض الكل',
-      'today': 'اليوم',
-      'yesterday': 'الأمس',
-      'thisWeek': 'هذا الأسبوع',
-      'older': 'أقدم',
-      'loading': 'جاري التحميل...',
-      'error': 'حدث خطأ، حاول مجدداً',
-      // more page
+      // ── الصفحة الرئيسية ──
+      'app_name': 'تطبيق المانغا',
+      'continue_reading': 'أكمل القراءة',
+      'latest_releases': 'آخر الإصدارات',
+      'top_rated': 'الأعلى تقييماً',
+      'manga_library': 'مكتبة المانغا',
+      'see_all': 'عرض الكل',
+      'error_loading': 'حدث خطأ في تحميل البيانات',
+
+      // ── صفحة المزيد ──
       'more_title': 'المزيد',
-      'account': 'تسجيل الدخول',
-      'account_sub': 'أنشئ حسابك أو سجّل دخولك',
       'app_settings': 'إعدادات التطبيق',
+      'account': 'الحساب',
+      'account_sub': 'إدارة حسابك والمفضلة',
       'language': 'اللغة',
-      'language_current': 'عربي',
+      'language_current': 'العربية',
       'language_switch': 'English',
       'day_mode': 'الوضع النهاري',
-      'day_mode_sub': 'اضغط للتفعيل',
+      'day_mode_sub': 'تبديل المظهر',
       'about': 'عن التطبيق',
       'version': 'الإصدار 1.0.0',
-      'contact': 'Contact Us',
+      'contact_us': 'تواصل معنا',
+
+      // ── Detail Page ──
+      'startReading': 'ابدأ القراءة',
+      'chapters': 'الفصول',
+      'type': 'النوع',
+      'status': 'الحالة',
+      'newest': 'الأحدث',
+      'oldest': 'الأقدم',
+      'chapterSearch': 'ابحث عن فصل...',
+      'noChapters': 'لا توجد فصول',
+      'chapterWord': 'الفصل',
+      'pageWord': 'صفحة',
+      'showMore': 'عرض المزيد',
+
+      // ── Library Page ──
+      'libraryNav': 'المكتبة',
+      'error_loading': 'حدث خطأ في تحميل البيانات',
+
+      // ── شيت عن التطبيق ──
+      'about_desc': 'تطبيق متكامل لقراءة المانجا، يوفر تجربة سلسة وسريعة مع واجهة عصرية مصممة خصيصاً لعشاق القصص المصورة.',
+      'features_title': '✨ ميزات التطبيق',
+      'feature_1': '🌓 دعم الوضع الداكن والنهاري',
+      'feature_2': '📚 مكتبة شخصية بتصنيفات متعددة',
+      'feature_3': '🔖 حفظ تقدم القراءة والمفضلة',
+      'feature_4': '↕️ قارئ بوضعين عمودي وأفقي',
+      'feature_5': '⭐ نظام تقييم ومتابعة الإصدارات',
+      'disclaimer': '⚠️ إخلاء المسؤولية: جميع المحتويات والترجمات والمواد المعروضة في هذا التطبيق هي ملك حصري لأصحابها وصانعيها الأصليين.',
+      'dev_title': '💻 التطوير',
+      'dev_names': 'أكرم فائق & يوسف سفيان',
     },
     'en': {
-      'home': 'Home',
-      'library': 'Library',
-      'search': 'Search',
-      'more': 'More',
-      'latestReleases': 'Latest Releases',
-      'topRated': 'Top Rated',
-      'libraryNav': 'Manga Library',
-      'seeAll': 'See All',
-      'today': 'Today',
-      'yesterday': 'Yesterday',
-      'thisWeek': 'This Week',
-      'older': 'Older',
-      'loading': 'Loading...',
-      'error': 'Something went wrong, try again',
-      // more page
+      // ── Home Page ──
+      'app_name': 'Manga App',
+      'continue_reading': 'Continue Reading',
+      'latest_releases': 'Latest Releases',
+      'top_rated': 'Top Rated',
+      'manga_library': 'Manga Library',
+      'see_all': 'See All',
+      'error_loading': 'Error loading data',
+
+      // ── More Page ──
       'more_title': 'More',
-      'account': 'Sign In',
-      'account_sub': 'Create an account or sign in',
       'app_settings': 'App Settings',
+      'account': 'Account',
+      'account_sub': 'Manage your account and favorites',
       'language': 'Language',
       'language_current': 'English',
       'language_switch': 'عربي',
       'day_mode': 'Light Mode',
-      'day_mode_sub': 'Tap to enable',
+      'day_mode_sub': 'Toggle appearance',
       'about': 'About',
       'version': 'Version 1.0.0',
-      'contact': 'Contact Us',
+      'contact_us': 'Contact Us',
+
+      // ── Detail Page ──
+      'startReading': 'Start Reading',
+      'chapters': 'Chapters',
+      'type': 'Type',
+      'status': 'Status',
+      'newest': 'Newest',
+      'oldest': 'Oldest',
+      'chapterSearch': 'Search chapter...',
+      'noChapters': 'No chapters found',
+      'chapterWord': 'Chapter',
+      'pageWord': 'pages',
+      'showMore': 'Show More',
+
+      // ── Library Page ──
+      'libraryNav': 'Library',
+      'error_loading': 'Error loading data',
+
+      // ── About Sheet ──
+      'about_desc': 'A full-featured manga reading app with a smooth, fast experience and a modern interface designed for comic lovers.',
+      'features_title': '✨ App Features',
+      'feature_1': '🌓 Dark & Light mode support',
+      'feature_2': '📚 Personal library with multiple categories',
+      'feature_3': '🔖 Save reading progress and favorites',
+      'feature_4': '↕️ Reader with vertical & horizontal modes',
+      'feature_5': '⭐ Rating system and release tracking',
+      'disclaimer': '⚠️ Disclaimer: All content, translations, and materials in this app are the exclusive property of their original owners and creators.',
+      'dev_title': '💻 Development',
+      'dev_names': 'Akram Faeq & Yousef Sofian',
     },
   };
 }
