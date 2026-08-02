@@ -4,22 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import '../../core/theme/app_provider.dart';
 import '../../models/manga_model.dart';
 import '../../models/chapter_model.dart';
 import '../../services/reading_progress_service.dart';
-
-// ═══════════════════════════════════════════════════════════════
-//  ReaderPage — قارئ المانغا
-//  ✅ أزرار السابق/التالي: سهم chevron بسيط (بدل nav-btn)
-//  ✅ قائمة الفصول: تفتح بالضغط على العنوان فقط (بدون badge)
-//  ✅ شريط التقدم: أنبوب زجاجي شفاف + ذهبي (نفس الأصل)
-// ═══════════════════════════════════════════════════════════════
 
 enum ReadingMode { vertical, horizontal }
 
 class ReaderPage extends StatefulWidget {
   final MangaModel manga;
-  final List<ChapterModel> allChapters; // مرتبة تصاعدياً
+  final List<ChapterModel> allChapters;
   final int initialChapterIndex;
   final int initialPageIndex;
 
@@ -48,25 +43,21 @@ class _ReaderPageState extends State<ReaderPage> {
   final _horizScrollCtrl = ScrollController();
   Timer? _hideTimer;
 
-  // ── عداد وقت القراءة ──
   Timer? _readingTimer;
   int _secondsRead = 0;
-  static const _minSeconds = 9;      // الحد الأدنى للحفظ
-  static const _maxProgress = 0.95;  // ما نحفظ إذا اكتمل 95%
+  static const _minSeconds = 9;
+  static const _maxProgress = 0.95;
 
-  ChapterModel get _chapter => widget.allChapters[_chapterIdx];
-  bool get _hasPrev => _chapterIdx > 0;
-  bool get _hasNext => _chapterIdx < widget.allChapters.length - 1;
-
-  // ─── ألوان (نفس الأصل) ───
-  static const _topbarColor = Color(0xBF0A0514);   // rgba(10,5,20,0.75)
-  static const _dropBgColor = Color(0xF70E0814);   // rgba(14,8,24,0.97)
+  static const _topbarColor = Color(0xBF0A0514);
+  static const _dropBgColor = Color(0xF70E0814);
   static const _goldColor   = Color(0xFFE8B85C);
   static const _accentColor = Color(0xFF9B5CF6);
   static const _textPrimary = Color(0xFFE2DEF0);
   static const _textSub     = Color(0x80FFFFFF);
 
-  // ══════════════ init / dispose ══════════════
+  ChapterModel get _chapter => widget.allChapters[_chapterIdx];
+  bool get _hasPrev => _chapterIdx > 0;
+  bool get _hasNext => _chapterIdx < widget.allChapters.length - 1;
 
   @override
   void initState() {
@@ -79,7 +70,6 @@ class _ReaderPageState extends State<ReaderPage> {
     _startHideTimer();
     _startReadingTimer();
 
-    // اذا فيه صفحة محفوظة، اسكرول لها بعد البناء
     if (widget.initialPageIndex > 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final pages = _chapter.pageUrls;
@@ -105,8 +95,6 @@ class _ReaderPageState extends State<ReaderPage> {
     _readingTimer?.cancel();
     super.dispose();
   }
-
-  // ══════════════ Scroll ══════════════
 
   void _onVerticalScroll() {
     if (_mode != ReadingMode.vertical) return;
@@ -139,8 +127,6 @@ class _ReaderPageState extends State<ReaderPage> {
     });
   }
 
-  // ══════════════ Reading Timer ══════════════
-
   void _startReadingTimer() {
     _secondsRead = 0;
     _readingTimer?.cancel();
@@ -153,15 +139,10 @@ class _ReaderPageState extends State<ReaderPage> {
   }
 
   void _trySaveProgress() {
-    // لا تحفظ إذا وصل 95% أو أكثر (اكتمل الفصل)
     if (_progress >= _maxProgress) return;
-
     final pages = _chapter.pageUrls;
     if (pages.isEmpty) return;
-
     final pageIdx = _currentPageIndex.clamp(0, pages.length - 1);
-    final pageUrl = pages[pageIdx];
-
     ReadingProgressService.save(ReadingProgress(
       mangaId: widget.manga.id,
       mangaTitle: widget.manga.title,
@@ -201,8 +182,6 @@ class _ReaderPageState extends State<ReaderPage> {
     if (_barsVisible) { _hideBars(); } else { _showBars(); }
   }
 
-  // ══════════════ Navigation ══════════════
-
   void _goToChapter(int newIdx) {
     if (newIdx < 0 || newIdx >= widget.allChapters.length) return;
     setState(() {
@@ -211,7 +190,7 @@ class _ReaderPageState extends State<ReaderPage> {
       _currentPageIndex = 0;
       _chaptersDropOpen = false;
     });
-    _startReadingTimer(); // ابدأ العداد من جديد للفصل الجديد
+    _startReadingTimer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_mode == ReadingMode.vertical && _vertScrollCtrl.hasClients) {
         _vertScrollCtrl.jumpTo(0);
@@ -253,12 +232,12 @@ class _ReaderPageState extends State<ReaderPage> {
     _showBars();
   }
 
-  // ══════════════════════════════════════════
-  //  BUILD
-  // ══════════════════════════════════════════
-
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+    final t        = provider.t;
+    final isAr     = provider.isArabic;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
@@ -266,10 +245,10 @@ class _ReaderPageState extends State<ReaderPage> {
         onTap: _onTap,
         child: Stack(
           children: [
-            // ── صفحات ──
-            _mode == ReadingMode.vertical ? _buildVertical() : _buildHorizontal(),
+            _mode == ReadingMode.vertical
+                ? _buildVertical(t)
+                : _buildHorizontal(t, isAr),
 
-            // ── overlay يغلق القائمة ──
             if (_chaptersDropOpen)
               Positioned.fill(
                 child: GestureDetector(
@@ -278,28 +257,23 @@ class _ReaderPageState extends State<ReaderPage> {
                 ),
               ),
 
-            // ── قائمة الفصول ──
-            if (_chaptersDropOpen) _buildChaptersDropdown(),
+            if (_chaptersDropOpen) _buildChaptersDropdown(t),
 
-            // ── TopBar ──
-            _buildTopBar(),
+            _buildTopBar(isAr),
 
-            // ── شريط التقدم الزجاجي الذهبي ──
-            _buildProgressBar(),
+            _buildProgressBar(isAr),
           ],
         ),
       ),
     );
   }
 
-  // ══════════════ الوضع العمودي ══════════════
-
-  Widget _buildVertical() {
+  Widget _buildVertical(String Function(String) t) {
     final pages = _chapter.pageUrls;
     if (pages.isEmpty) {
-      return const Center(
-        child: Text('لا توجد صفحات لهذا الفصل',
-            style: TextStyle(color: _textSub, fontSize: 14)),
+      return Center(
+        child: Text(t('no_pages'),
+            style: const TextStyle(color: _textSub, fontSize: 14)),
       );
     }
     return ListView.builder(
@@ -311,18 +285,18 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  // ══════════════ الوضع الأفقي ══════════════
-
-  Widget _buildHorizontal() {
+  Widget _buildHorizontal(String Function(String) t, bool isAr) {
     final pages = _chapter.pageUrls;
     if (pages.isEmpty) {
-      return const Center(
-        child: Text('لا توجد صفحات', style: TextStyle(color: _textSub, fontSize: 14)),
+      return Center(
+        child: Text(t('no_pages_short'),
+            style: const TextStyle(color: _textSub, fontSize: 14)),
       );
     }
     final size = MediaQuery.of(context).size;
+    // عربي: RTL (مانغا تُقرأ من اليمين) | إنجليزي: LTR (مانهوا/كوميك من اليسار)
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: ListView.builder(
         controller: _horizScrollCtrl,
         scrollDirection: Axis.horizontal,
@@ -336,12 +310,20 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  // ══════════════ TopBar ══════════════
-  // ✅ أزرار السابق/التالي: chevron شفاف بسيط (بدل دائرة بنفسجية)
-  // ✅ العنوان قابل للضغط لفتح القائمة (بدون badge منفصل)
-
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isAr) {
     final isHoriz = _mode == ReadingMode.horizontal;
+
+    // عربي: السابق يمين (chevron_right) | إنجليزي: السابق يسار (chevron_left)
+    final Widget prevBtn = _NavBtn(
+      icon: isAr ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
+      onTap: () => _goChapterDir('prev'),
+      faded: !_hasPrev,
+    );
+    final Widget nextBtn = _NavBtn(
+      icon: isAr ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+      onTap: () => _goChapterDir('next'),
+      faded: !_hasNext,
+    );
 
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
@@ -359,17 +341,10 @@ class _ReaderPageState extends State<ReaderPage> {
               border: Border(bottom: BorderSide(color: Color(0x269B28FF), width: 1)),
             ),
             child: Row(
-              textDirection: TextDirection.ltr,
+              // عربي: السابق يمين | إنجليزي: السابق يسار
+              textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
               children: [
-
-                // ── زر السابق (يسار) — باهت إذا أول فصل ──
-                _NavBtn(
-                  icon: Icons.chevron_left_rounded,
-                  onTap: () => _goChapterDir('prev'),
-                  faded: !_hasPrev,
-                ),
-
-                // ── العنوان (يفتح قائمة الفصول، بدون سهم) ──
+                prevBtn,
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -389,8 +364,6 @@ class _ReaderPageState extends State<ReaderPage> {
                     ),
                   ),
                 ),
-
-                // ── زر تبديل الوضع ──
                 GestureDetector(
                   onTap: _toggleMode,
                   child: AnimatedContainer(
@@ -417,15 +390,8 @@ class _ReaderPageState extends State<ReaderPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 8),
-
-                // ── زر التالي (يمين) — باهت إذا آخر فصل ──
-                _NavBtn(
-                  icon: Icons.chevron_right_rounded,
-                  onTap: () => _goChapterDir('next'),
-                  faded: !_hasNext,
-                ),
+                nextBtn,
               ],
             ),
           ),
@@ -434,10 +400,7 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  // ══════════════ شريط التقدم الزجاجي (نفس الأصل) ══════════════
-  // أنبوب زجاجي: خلفية شفافة + border أبيض خفيف + fill ذهبي
-
-  Widget _buildProgressBar() {
+  Widget _buildProgressBar(bool isAr) {
     final total = _chapter.pageUrls.length;
     final current = total > 0 ? _currentPageIndex + 1 : 0;
     return AnimatedPositioned(
@@ -449,18 +412,14 @@ class _ReaderPageState extends State<ReaderPage> {
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
         child: Row(
           children: [
-            // ── عداد الصفحات ──
             Text(
               '$current / $total',
               style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: _goldColor,
-                letterSpacing: 0.4,
+                fontSize: 11, fontWeight: FontWeight.w600,
+                color: _goldColor, letterSpacing: 0.4,
               ),
             ),
             const SizedBox(width: 10),
-            // ── شريط التقدم الزجاجي ──
             Expanded(
               child: Container(
                 height: 10,
@@ -472,7 +431,8 @@ class _ReaderPageState extends State<ReaderPage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(999),
                   child: Directionality(
-                    textDirection: TextDirection.rtl,
+                    // عربي: يمتلئ من اليمين | إنجليزي: يمتلئ من اليسار
+                    textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
                     child: LinearProgressIndicator(
                       value: _progress,
                       backgroundColor: Colors.transparent,
@@ -489,9 +449,7 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  // ══════════════ قائمة الفصول المنسدلة ══════════════
-
-  Widget _buildChaptersDropdown() {
+  Widget _buildChaptersDropdown(String Function(String) t) {
     final sorted = widget.allChapters.reversed.toList();
     return Positioned(
       top: 56, left: 0, right: 0,
@@ -538,7 +496,7 @@ class _ReaderPageState extends State<ReaderPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'الفصل ${ch.number}',
+                          '${t('chapterWord')} ${ch.number}',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
@@ -566,20 +524,12 @@ class _ReaderPageState extends State<ReaderPage> {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-//  _NavBtn — زر السابق/التالي
-//  بنفسجي دائماً — شفاف (faded) عند أول/آخر فصل
-// ═══════════════════════════════════════════════════════
 class _NavBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  final bool faded; // أول أو آخر فصل → شفاف
+  final bool faded;
 
-  const _NavBtn({
-    required this.icon,
-    required this.onTap,
-    this.faded = false,
-  });
+  const _NavBtn({required this.icon, required this.onTap, this.faded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -590,9 +540,7 @@ class _NavBtn extends StatelessWidget {
         width: 38, height: 38,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: faded
-              ? const Color(0x4D9B5CF6)   // بنفسجي شفاف
-              : const Color(0xFF9B5CF6),   // بنفسجي كامل
+          color: faded ? const Color(0x4D9B5CF6) : const Color(0xFF9B5CF6),
           boxShadow: faded ? null : const [
             BoxShadow(color: Color(0x809B3CF6), blurRadius: 12),
           ],
@@ -603,18 +551,12 @@ class _NavBtn extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-//  _ModeIcon — أيقونة السهمين (نفس الأصل: سهم أعلى + أسفل)
-// ═══════════════════════════════════════════════════════
 class _ModeIcon extends StatelessWidget {
   const _ModeIcon();
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(20, 20),
-      painter: _ModeIconPainter(),
-    );
+    return CustomPaint(size: const Size(20, 20), painter: _ModeIconPainter());
   }
 }
 
@@ -629,13 +571,9 @@ class _ModeIconPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final cx = size.width / 2;
-
-    // خط عمودي
     canvas.drawLine(Offset(cx, size.height * 0.79), Offset(cx, size.height * 0.21), paint);
-    // سهم للأعلى
     canvas.drawLine(Offset(cx - 5, size.height * 0.38), Offset(cx, size.height * 0.21), paint);
     canvas.drawLine(Offset(cx + 5, size.height * 0.38), Offset(cx, size.height * 0.21), paint);
-    // سهم للأسفل
     canvas.drawLine(Offset(cx - 5, size.height * 0.62), Offset(cx, size.height * 0.79), paint);
     canvas.drawLine(Offset(cx + 5, size.height * 0.62), Offset(cx, size.height * 0.79), paint);
   }
@@ -644,10 +582,6 @@ class _ModeIconPainter extends CustomPainter {
   bool shouldRepaint(_) => false;
 }
 
-// ═══════════════════════════════════════════════════════
-//  _PageImage — صورة صفحة واحدة
-//  blur → sharp عند التحميل (نفس filter:blur الأصل)
-// ═══════════════════════════════════════════════════════
 class _PageImage extends StatefulWidget {
   final String url;
   final BoxFit fit;
@@ -684,6 +618,7 @@ class _PageImageState extends State<_PageImage>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.read<AppProvider>().t;
     return CachedNetworkImage(
       imageUrl: widget.url,
       fit: widget.fit,
@@ -695,9 +630,7 @@ class _PageImageState extends State<_PageImage>
         child: const Center(
           child: SizedBox(
             width: 24, height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2, color: Color(0xFF9B5CF6),
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF9B5CF6)),
           ),
         ),
       ),
@@ -722,9 +655,9 @@ class _PageImageState extends State<_PageImage>
       errorWidget: (_, __, ___) => Container(
         color: const Color(0xFF111111),
         height: 160,
-        child: const Center(
-          child: Text('تعذر تحميل هذه الصفحة',
-              style: TextStyle(color: Color(0x59FFFFFF), fontSize: 12)),
+        child: Center(
+          child: Text(t('page_load_error'),
+              style: const TextStyle(color: Color(0x59FFFFFF), fontSize: 12)),
         ),
       ),
     );

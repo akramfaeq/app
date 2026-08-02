@@ -21,21 +21,17 @@ class _MainScaffoldState extends State<MainScaffold> {
   void _nav(int index, {bool sortByRating = false}) {
     setState(() {
       _index = index;
-      if (index == 1) {
-        _librarySortByRating = sortByRating;
-      }
-      if (index == 0) {
-        _librarySortByRating = false;
-      }
+      if (index == 1) _librarySortByRating = sortByRating;
+      if (index == 0) _librarySortByRating = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final navBg = dark ? const Color(0xF70A0714) : Colors.white.withOpacity(0.97);
-    final selectedClr = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
+    final provider      = context.watch<AppProvider>();
+    final dark          = Theme.of(context).brightness == Brightness.dark;
+    final navBg         = dark ? const Color(0xF70A0714) : Colors.white.withOpacity(0.97);
+    final selectedClr   = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
     final unselectedClr = dark ? const Color(0xFF4A4460) : const Color(0xFF9CA3AF);
 
     return Scaffold(
@@ -70,7 +66,8 @@ class _MainScaffoldState extends State<MainScaffold> {
           child: SizedBox(
             height: 62,
             child: Directionality(
-              textDirection: TextDirection.rtl,
+              // عربي: الرئيسية يمين | إنجليزي: الرئيسية يسار
+              textDirection: provider.dir,
               child: Row(
                 children: [
                   _NavItem(
@@ -83,7 +80,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   ),
                   _NavItem(
                     icon: Icons.grid_view_rounded,
-                    label: provider.t('library'),
+                    label: provider.t('libraryNav'),
                     isActive: _index == 1,
                     selectedClr: selectedClr,
                     unselectedClr: unselectedClr,

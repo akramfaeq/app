@@ -63,6 +63,25 @@ class _DetailPageState extends State<DetailPage> {
     return list;
   }
 
+  // ترجمة قيم البيانات القادمة من الـ API
+  String _translateType(String type, String Function(String) t, bool isAr) {
+    if (isAr) return type;
+    const map = {
+      'مانغا': 'Manga', 'مانهوا': 'Manhwa', 'مانها': 'Manhua',
+      'رواية': 'Novel', 'ويب تون': 'Webtoon',
+    };
+    return map[type] ?? type;
+  }
+
+  String _translateStatus(String status, String Function(String) t, bool isAr) {
+    if (isAr) return status;
+    const map = {
+      'مستمرة': 'Ongoing', 'مكتملة': 'Completed',
+      'متوقفة': 'Hiatus', 'ملغاة': 'Cancelled',
+    };
+    return map[status] ?? status;
+  }
+
   void _openReader(ChapterModel chapter) {
     final sortedAsc = [..._chapters]
       ..sort((a, b) => a.number.compareTo(b.number));
@@ -199,10 +218,12 @@ class _DetailPageState extends State<DetailPage> {
                           _InfoCard(label: t('chapters'), value: widget.manga.chaptersCount.toString(),
                               dark: dark, cardBg: cardBg, textClr: textClr),
                           const SizedBox(width: 8),
-                          _InfoCard(label: t('type'), value: widget.manga.type,
+                          _InfoCard(label: t('type'),
+                              value: _translateType(widget.manga.type, t, provider.isArabic),
                               dark: dark, cardBg: cardBg, textClr: textClr),
                           const SizedBox(width: 8),
-                          _InfoCard(label: t('status'), value: widget.manga.status,
+                          _InfoCard(label: t('status'),
+                              value: _translateStatus(widget.manga.status, t, provider.isArabic),
                               dark: dark, cardBg: cardBg, textClr: textClr, isStatus: true),
                         ],
                       ),
@@ -466,7 +487,7 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final valueColor = isStatus
-        ? (value == 'مكتملة' || value == 'Completed'
+        ? (value == 'مكتملة' || value == 'Completed' || value == 'Cancelled' || value == 'ملغاة'
             ? const Color(0xFFF87171)
             : const Color(0xFF4ADE80))
         : Colors.white;

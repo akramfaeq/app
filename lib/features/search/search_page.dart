@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_provider.dart';
 import '../../models/manga_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/manga_service.dart';
@@ -26,12 +28,12 @@ class _SearchPageState extends State<SearchPage> {
   String? _selectedType;
   String? _selectedStatus;
 
+  // التصنيفات — ثابتة بالعربي/الإنجليزي (يتم الفلترة بناءً على البيانات)
+  // التصنيفات ثابتة بالعربي دائماً
   static const _genres = [
     'أكشن', 'رعب', 'دراما', 'كوميدي', 'مغامرة', 'فانتازيا',
     'رومانسي', 'خيال علمي', 'رياضة', 'نفسي',
   ];
-  static const _types    = ['مانغا', 'مانهوا'];
-  static const _statuses = ['مستمرة', 'مكتملة'];
 
   @override
   void initState() {
@@ -100,7 +102,13 @@ class _SearchPageState extends State<SearchPage> {
     _applyFilters();
   }
 
-  void _openFilterSheet() {
+  void _openFilterSheet(AppProvider provider) {
+    final t      = provider.t;
+    // التصنيفات والأنواع والحالة ثابتة بالعربي دائماً
+    final genres   = _genres;
+    const types    = ['مانغا', 'مانهوا'];
+    const statuses = ['مستمرة', 'مكتملة'];
+
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
@@ -119,8 +127,8 @@ class _SearchPageState extends State<SearchPage> {
             if (_selectedGenres.contains(g)) _selectedGenres.remove(g);
             else _selectedGenres.add(g);
           });
-          void toggleType(String t)   => setSheet(() =>
-              _selectedType = _selectedType == t ? null : t);
+          void toggleType(String tp)  => setSheet(() =>
+              _selectedType = _selectedType == tp ? null : tp);
           void toggleStatus(String s) => setSheet(() =>
               _selectedStatus = _selectedStatus == s ? null : s);
 
@@ -132,7 +140,7 @@ class _SearchPageState extends State<SearchPage> {
               border: Border.all(color: accent.withOpacity(0.12)),
             ),
             child: Directionality(
-              textDirection: TextDirection.rtl,
+              textDirection: provider.dir,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                 child: Column(
@@ -143,44 +151,44 @@ class _SearchPageState extends State<SearchPage> {
                       children: [
                         Icon(Icons.filter_list_rounded, color: accent, size: 20),
                         const SizedBox(width: 6),
-                        Text('تصنيف بواسطة',
+                        Text(t('filter_by'),
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: textClr)),
                         const Spacer(),
                         if (_hasActiveFilters)
                           GestureDetector(
                             onTap: () { setSheet(_clearFilters); },
-                            child: Text('مسح الكل',
+                            child: Text(t('clear_all'),
                                 style: TextStyle(fontSize: 12, color: accent, fontWeight: FontWeight.w600)),
                           ),
                       ],
                     ),
                     const SizedBox(height: 18),
-                    Text('التصنيف', style: TextStyle(fontSize: 11, color: subClr, fontWeight: FontWeight.w600)),
+                    Text(t('genre_label'), style: TextStyle(fontSize: 11, color: subClr, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 8, runSpacing: 8,
-                      children: _genres.map((g) => _Chip(
+                      children: genres.map((g) => _Chip(
                         label: g, selected: _selectedGenres.contains(g),
                         accent: accent, dark: dark, textClr: textClr,
                         onTap: () => toggleGenre(g),
                       )).toList(),
                     ),
                     const SizedBox(height: 18),
-                    Text('النوع', style: TextStyle(fontSize: 11, color: subClr, fontWeight: FontWeight.w600)),
+                    Text(t('type_label'), style: TextStyle(fontSize: 11, color: subClr, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 10),
                     Row(
-                      children: _types.map((t) => Padding(
+                      children: types.map((tp) => Padding(
                         padding: const EdgeInsets.only(left: 8),
-                        child: _Chip(label: t, selected: _selectedType == t,
+                        child: _Chip(label: tp, selected: _selectedType == tp,
                             accent: accent, dark: dark, textClr: textClr,
-                            onTap: () => toggleType(t)),
+                            onTap: () => toggleType(tp)),
                       )).toList(),
                     ),
                     const SizedBox(height: 18),
-                    Text('الحالة', style: TextStyle(fontSize: 11, color: subClr, fontWeight: FontWeight.w600)),
+                    Text(t('status_label'), style: TextStyle(fontSize: 11, color: subClr, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 10),
                     Row(
-                      children: _statuses.map((s) => Padding(
+                      children: statuses.map((s) => Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: _Chip(label: s, selected: _selectedStatus == s,
                             accent: accent, dark: dark, textClr: textClr,
@@ -197,7 +205,8 @@ class _SearchPageState extends State<SearchPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           elevation: 0, shadowColor: Colors.transparent,
                         ),
-                        child: const Text('تطبيق', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                        child: Text(t('apply_filter'),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                       ),
                     ),
                   ],
@@ -212,6 +221,10 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+    final t        = provider.t;
+    final dir      = provider.dir;
+
     final dark    = Theme.of(context).brightness == Brightness.dark;
     final bg      = dark ? AppColors.darkBgDeep : AppColors.lightBgDeep;
     final accent  = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
@@ -222,11 +235,11 @@ class _SearchPageState extends State<SearchPage> {
 
     final headerHeight = labels.isNotEmpty ? 102.0 : 60.0;
 
-    return Scaffold(
-      backgroundColor: bg,
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Container(
+    return Directionality(
+      textDirection: dir,
+      child: Scaffold(
+        backgroundColor: bg,
+        body: Container(
           color: bg,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
@@ -259,16 +272,22 @@ class _SearchPageState extends State<SearchPage> {
                                   child: TextField(
                                     controller: _searchCtrl,
                                     focusNode: _focusNode,
+                                    textDirection: dir,
                                     style: TextStyle(color: textClr, fontSize: 14),
                                     decoration: InputDecoration(
-                                      hintText: 'ابحث عن مانغا...',
+                                      hintText: t('search_placeholder'),
                                       hintStyle: TextStyle(color: subClr, fontSize: 13),
-                                      suffixIcon: Icon(Icons.search_rounded, color: subClr, size: 20),
-                                      prefixIcon: _searchCtrl.text.isNotEmpty
-                                          ? GestureDetector(
-                                              onTap: () { _searchCtrl.clear(); _focusNode.unfocus(); },
-                                              child: Icon(Icons.close_rounded, color: subClr, size: 17))
+                                      // أيقونة البحث: يمين بالعربي، يسار بالإنجليزي
+                                      suffixIcon: provider.isArabic
+                                          ? Icon(Icons.search_rounded, color: subClr, size: 20)
                                           : null,
+                                      prefixIcon: provider.isArabic
+                                          ? (_searchCtrl.text.isNotEmpty
+                                              ? GestureDetector(
+                                                  onTap: () { _searchCtrl.clear(); _focusNode.unfocus(); },
+                                                  child: Icon(Icons.close_rounded, color: subClr, size: 17))
+                                              : null)
+                                          : Icon(Icons.search_rounded, color: subClr, size: 20),
                                       border: InputBorder.none,
                                       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                                       isDense: true,
@@ -278,7 +297,7 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                               const SizedBox(width: 10),
                               GestureDetector(
-                                onTap: _openFilterSheet,
+                                onTap: () => _openFilterSheet(provider),
                                 child: Stack(
                                   clipBehavior: Clip.none,
                                   children: [
@@ -294,11 +313,9 @@ class _SearchPageState extends State<SearchPage> {
                                         ),
                                       ),
                                       child: Center(
-                                        child: Icon(
-                                          Icons.filter_list_rounded,
-                                          size: 22,
-                                          color: _hasActiveFilters ? accent : subClr,
-                                        ),
+                                        child: Icon(Icons.filter_list_rounded,
+                                            size: 22,
+                                            color: _hasActiveFilters ? accent : subClr),
                                       ),
                                     ),
                                     if (_hasActiveFilters)
@@ -321,7 +338,9 @@ class _SearchPageState extends State<SearchPage> {
                           if (labels.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             Align(
-                              alignment: Alignment.centerRight,
+                              alignment: provider.isArabic
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 physics: const BouncingScrollPhysics(),
@@ -341,8 +360,7 @@ class _SearchPageState extends State<SearchPage> {
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text(
-                                                lbl,
+                                              Text(lbl,
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: dark ? accent : textClr,
@@ -350,7 +368,8 @@ class _SearchPageState extends State<SearchPage> {
                                                 ),
                                               ),
                                               const SizedBox(width: 5),
-                                              Icon(Icons.close_rounded, size: 13, color: dark ? accent : subClr),
+                                              Icon(Icons.close_rounded, size: 13,
+                                                  color: dark ? accent : subClr),
                                             ],
                                           ),
                                         ),
@@ -383,7 +402,7 @@ class _SearchPageState extends State<SearchPage> {
                   fillOverscroll: true,
                   child: Container(
                     color: bg,
-                    child: _EmptyState(dark: dark, accent: accent),
+                    child: _EmptyState(dark: dark, accent: accent, t: t),
                   ),
                 )
               else ...[
@@ -462,12 +481,10 @@ class _Chip extends StatelessWidget {
             width: 1.2,
           ),
         ),
-        child: Text(
-          label,
+        child: Text(label,
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: selected ? (dark ? accent : accent) : textClr,
+            fontSize: 12, fontWeight: FontWeight.w700,
+            color: selected ? accent : textClr,
           ),
         ),
       ),
@@ -512,8 +529,7 @@ class _SearchCard extends StatelessWidget {
                   children: [
                     manga.cover.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: manga.cover,
-                            fit: BoxFit.cover,
+                            imageUrl: manga.cover, fit: BoxFit.cover,
                             placeholder: (_, __) => Container(color: const Color(0xFF161129)),
                             errorWidget: (_, __, ___) => Container(
                               color: const Color(0xFF161129),
@@ -525,8 +541,7 @@ class _SearchCard extends StatelessWidget {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
+                            begin: Alignment.bottomCenter, end: Alignment.topCenter,
                             colors: [Colors.black.withOpacity(0.65), Colors.transparent],
                             stops: const [0.0, 0.45],
                           ),
@@ -542,10 +557,8 @@ class _SearchCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: const Color(0xFFE8B85C).withOpacity(0.6), width: 1),
                         ),
-                        child: Text(
-                          '${manga.rating.toStringAsFixed(1)} ★',
-                          style: const TextStyle(fontSize: 10, color: Color(0xFFE8B85C), fontWeight: FontWeight.bold),
-                        ),
+                        child: Text('${manga.rating.toStringAsFixed(1)} ★',
+                            style: const TextStyle(fontSize: 10, color: Color(0xFFE8B85C), fontWeight: FontWeight.bold)),
                       ),
                     ),
                     Positioned(
@@ -581,7 +594,9 @@ class _SearchCard extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   final bool dark;
   final Color accent;
-  const _EmptyState({required this.dark, required this.accent});
+  final String Function(String) t;
+
+  const _EmptyState({required this.dark, required this.accent, required this.t});
 
   @override
   Widget build(BuildContext context) {
@@ -591,11 +606,12 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(Icons.search_off_rounded, size: 52, color: accent.withOpacity(0.2)),
           const SizedBox(height: 12),
-          Text('لا توجد نتائج', style: TextStyle(
-              color: dark ? Colors.white38 : Colors.black38,
-              fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(t('no_results'),
+              style: TextStyle(
+                  color: dark ? Colors.white38 : Colors.black38,
+                  fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
-          Text('جرب تغيير الفلاتر أو كلمة البحث',
+          Text(t('try_different'),
               style: TextStyle(color: dark ? Colors.white24 : Colors.black26, fontSize: 12)),
         ],
       ),

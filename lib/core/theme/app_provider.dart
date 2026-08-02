@@ -40,7 +40,7 @@ class AppProvider extends ChangeNotifier {
     return (_translations[_lang]?[key]) ?? (_translations['ar']?[key]) ?? key;
   }
 
-  static const Map<String, Map<String, String>> _translations = {
+  static final Map<String, Map<String, String>> _translations = {
     'ar': {
       // ── الصفحة الرئيسية ──
       'app_name': 'تطبيق المانغا',
@@ -50,6 +50,9 @@ class AppProvider extends ChangeNotifier {
       'manga_library': 'مكتبة المانغا',
       'see_all': 'عرض الكل',
       'error_loading': 'حدث خطأ في تحميل البيانات',
+      'home': 'الرئيسية',
+      'search': 'البحث',
+      'more': 'المزيد',
 
       // ── صفحة المزيد ──
       'more_title': 'المزيد',
@@ -80,7 +83,22 @@ class AppProvider extends ChangeNotifier {
 
       // ── Library Page ──
       'libraryNav': 'المكتبة',
-      'error_loading': 'حدث خطأ في تحميل البيانات',
+
+      // ── Reader Page ──
+      'no_pages': 'لا توجد صفحات لهذا الفصل',
+      'no_pages_short': 'لا توجد صفحات',
+      'page_load_error': 'تعذر تحميل هذه الصفحة',
+
+      // ── Search Page ──
+      'search_placeholder': 'ابحث عن مانغا...',
+      'filter_by': 'تصنيف بواسطة',
+      'clear_all': 'مسح الكل',
+      'genre_label': 'التصنيف',
+      'type_label': 'النوع',
+      'status_label': 'الحالة',
+      'apply_filter': 'تطبيق',
+      'no_results': 'لا توجد نتائج',
+      'try_different': 'جرب تغيير الفلاتر أو كلمة البحث',
 
       // ── شيت عن التطبيق ──
       'about_desc': 'تطبيق متكامل لقراءة المانجا، يوفر تجربة سلسة وسريعة مع واجهة عصرية مصممة خصيصاً لعشاق القصص المصورة.',
@@ -103,6 +121,9 @@ class AppProvider extends ChangeNotifier {
       'manga_library': 'Manga Library',
       'see_all': 'See All',
       'error_loading': 'Error loading data',
+      'home': 'home',
+      'search': 'search',
+      'more': 'more',
 
       // ── More Page ──
       'more_title': 'More',
@@ -133,7 +154,22 @@ class AppProvider extends ChangeNotifier {
 
       // ── Library Page ──
       'libraryNav': 'Library',
-      'error_loading': 'Error loading data',
+
+      // ── Reader Page ──
+      'no_pages': 'No pages in this chapter',
+      'no_pages_short': 'No pages',
+      'page_load_error': 'Failed to load this page',
+
+      // ── Search Page ──
+      'search_placeholder': 'Search manga...',
+      'filter_by': 'Filter by',
+      'clear_all': 'Clear All',
+      'genre_label': 'Genre',
+      'type_label': 'Type',
+      'status_label': 'Status',
+      'apply_filter': 'Apply',
+      'no_results': 'No results found',
+      'try_different': 'Try different filters or search terms',
 
       // ── About Sheet ──
       'about_desc': 'A full-featured manga reading app with a smooth, fast experience and a modern interface designed for comic lovers.',

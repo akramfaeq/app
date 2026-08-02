@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import '../../core/theme/app_provider.dart';
 import '../../services/reading_progress_service.dart';
 
 class ContinueReadingCard extends StatefulWidget {
@@ -36,10 +38,23 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
   @override
   Widget build(BuildContext context) {
     if (_loading || _progress == null) return const SizedBox.shrink();
-    final p = _progress!;
+    final p        = _progress!;
+    final provider = context.watch<AppProvider>();
+    final t        = provider.t;
+    final dir      = provider.dir;
+    final isAr     = provider.isArabic;
+
+    // نص الفصل حسب اللغة
+    final chapterText = isAr
+        ? (p.totalChapters > 0
+            ? 'الفصل ${p.chapterNumber} من ${p.totalChapters}'
+            : 'الفصل ${p.chapterNumber}')
+        : (p.totalChapters > 0
+            ? 'Chapter ${p.chapterNumber} of ${p.totalChapters}'
+            : 'Chapter ${p.chapterNumber}');
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: dir,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -47,9 +62,8 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // عنوان القسم — نفس style الرئيسية
+            // عنوان القسم
             Row(
-              textDirection: TextDirection.rtl,
               children: [
                 Container(
                   width: 24, height: 24,
@@ -60,8 +74,8 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                   child: const Icon(Icons.play_arrow_rounded, size: 13, color: _accent),
                 ),
                 const SizedBox(width: 8),
-                const Text('أكمل القراءة',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
+                Text(t('continue_reading'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
                       color: _textPrimary, fontFamily: 'Tajawal')),
               ],
             ),
@@ -88,7 +102,7 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         child: Row(
                           children: [
-                            // صورة يمين
+                            // صورة — يمين بالعربي، يسار بالإنجليزي (تلقائي مع Directionality)
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: CachedNetworkImage(
@@ -103,7 +117,7 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            // نص وسط
+                            // النص
                             Expanded(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -111,20 +125,17 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                                 children: [
                                   Text(p.mangaTitle,
                                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-                                        color: _textPrimary, fontFamily: 'Tajawal', overflow: TextOverflow.ellipsis),
+                                        color: _textPrimary, fontFamily: 'Tajawal',
+                                        overflow: TextOverflow.ellipsis),
                                     maxLines: 1),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    p.totalChapters > 0
-                                        ? 'الفصل ${p.chapterNumber} من ${p.totalChapters}'
-                                        : 'الفصل ${p.chapterNumber}',
-                                    style: const TextStyle(fontSize: 11, color: _textSub, fontFamily: 'Tajawal'),
-                                  ),
+                                  Text(chapterText,
+                                    style: const TextStyle(fontSize: 11, color: _textSub, fontFamily: 'Tajawal')),
                                 ],
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // play يسار
+                            // زر play
                             Container(
                               width: 34, height: 34,
                               decoration: BoxDecoration(
@@ -138,12 +149,15 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                         ),
                       ),
                     ),
-                    // شريط ذهبي
-                    LinearProgressIndicator(
-                      value: p.progress.clamp(0.0, 1.0),
-                      minHeight: 2.5,
-                      backgroundColor: Colors.white.withOpacity(0.06),
-                      valueColor: const AlwaysStoppedAnimation<Color>(_gold),
+                    // شريط التقدم — يمتلئ حسب اتجاه اللغة
+                    Directionality(
+                      textDirection: dir,
+                      child: LinearProgressIndicator(
+                        value: p.progress.clamp(0.0, 1.0),
+                        minHeight: 2.5,
+                        backgroundColor: Colors.white.withOpacity(0.06),
+                        valueColor: const AlwaysStoppedAnimation<Color>(_gold),
+                      ),
                     ),
                   ],
                 ),
