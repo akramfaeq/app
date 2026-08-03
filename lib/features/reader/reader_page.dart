@@ -339,9 +339,9 @@ class _ReaderPageState extends State<ReaderPage> {
           child: Container(
             height: 56,
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: _topbarColor,
-              border: Border(bottom: BorderSide(color: Color(0x269B28FF), width: 1)),
+              border: Border(bottom: BorderSide(color: accent.withOpacity(0.15), width: 1)),
             ),
             child: Row(
               // عربي: السابق يمين | إنجليزي: السابق يسار
@@ -375,11 +375,11 @@ class _ReaderPageState extends State<ReaderPage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isHoriz
-                          ? const Color(0x38BB5FF6)
+                          ? accent.withOpacity(0.22)
                           : const Color(0x12FFFFFF),
                       border: Border.all(
                         color: isHoriz
-                            ? const Color(0x99BB5FF6)
+                            ? accent.withOpacity(0.6)
                             : const Color(0x26FFFFFF),
                       ),
                     ),
@@ -417,9 +417,9 @@ class _ReaderPageState extends State<ReaderPage> {
           children: [
             Text(
               '$current / $total',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w600,
-                color: _goldColor, letterSpacing: 0.4,
+                color: accent, letterSpacing: 0.4,
               ),
             ),
             const SizedBox(width: 10),
@@ -439,7 +439,7 @@ class _ReaderPageState extends State<ReaderPage> {
                     child: LinearProgressIndicator(
                       value: _progress,
                       backgroundColor: Colors.transparent,
-                      valueColor: const AlwaysStoppedAnimation<Color>(_goldColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(accent),
                       minHeight: 10,
                     ),
                   ),
@@ -463,9 +463,9 @@ class _ReaderPageState extends State<ReaderPage> {
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.55,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: _dropBgColor,
-              border: Border(bottom: BorderSide(color: Color(0x409B28FF), width: 1)),
+              border: Border(bottom: BorderSide(color: accent.withOpacity(0.25), width: 1)),
             ),
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
@@ -486,12 +486,12 @@ class _ReaderPageState extends State<ReaderPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                     decoration: BoxDecoration(
                       color: isCurrent
-                          ? const Color(0x339B28FF)
+                          ? accent.withOpacity(0.2)
                           : const Color(0x08FFFFFF),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isCurrent
-                            ? const Color(0x729B28FF)
+                            ? accent.withOpacity(0.45)
                             : const Color(0x10FFFFFF),
                       ),
                     ),
@@ -509,7 +509,7 @@ class _ReaderPageState extends State<ReaderPage> {
                         if (isCurrent)
                           Container(
                             width: 7, height: 7,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: accent,
                             ),
@@ -536,6 +536,8 @@ class _NavBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark   = Theme.of(context).brightness == Brightness.dark;
+    final accent = dark ? const Color(0xFF9B5CF6) : const Color(0xFF3F5EFB);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -544,8 +546,8 @@ class _NavBtn extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: faded ? accent.withOpacity(0.3) : accent,
-          boxShadow: faded ? null : const [
-            BoxShadow(color: Color(0x809B3CF6), blurRadius: 12),
+          boxShadow: faded ? null : [
+            BoxShadow(color: accent.withOpacity(0.5), blurRadius: 12),
           ],
         ),
         child: Icon(icon, color: Colors.white, size: 22),
@@ -632,7 +634,7 @@ class _PageImageState extends State<_PageImage>
       placeholder: (_, __) => Container(
         color: const Color(0xFF111111),
         height: widget.fillH ?? 300,
-        child: const Center(
+        child: Center(
           child: SizedBox(
             width: 24, height: 24,
             child: CircularProgressIndicator(strokeWidth: 2, color: accent),
