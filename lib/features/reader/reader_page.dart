@@ -48,7 +48,7 @@ class _ReaderPageState extends State<ReaderPage> {
   static const _minSeconds = 9;
   static const _maxProgress = 0.95;
 
-  static const _topbarColor = Color(0xBF0A0514);
+  static const _topbarColor = Color(0xBF0A0514); // الليلي فقط
   static const _dropBgColor = Color(0xF70E0814);
   static const _goldColor   = Color(0xFFE8B85C);
   static const _accentColor = Color(0xFF9B5CF6); // الليلي فقط
@@ -242,7 +242,7 @@ class _ReaderPageState extends State<ReaderPage> {
     final accent   = dark ? _accentColor : const Color(0xFF3F5EFB);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // 🖤 خلفية سوداء دائماً للقارئ بالكامل
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _onTap,
@@ -260,11 +260,11 @@ class _ReaderPageState extends State<ReaderPage> {
                 ),
               ),
 
-            if (_chaptersDropOpen) _buildChaptersDropdown(t, accent),
+            if (_chaptersDropOpen) _buildChaptersDropdown(t, accent, dark),
 
-            _buildTopBar(isAr, accent),
+            _buildTopBar(isAr, accent, dark),
 
-            _buildProgressBar(isAr, accent),
+            _buildProgressBar(isAr, accent, dark),
           ],
         ),
       ),
@@ -313,7 +313,7 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  Widget _buildTopBar(bool isAr, Color accent) {
+  Widget _buildTopBar(bool isAr, Color accent, bool dark) {
     final isHoriz = _mode == ReadingMode.horizontal;
 
     // عربي: السابق يمين (chevron_right) | إنجليزي: السابق يسار (chevron_left)
@@ -403,7 +403,7 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  Widget _buildProgressBar(bool isAr, Color accent) {
+  Widget _buildProgressBar(bool isAr, Color accent, bool dark) {
     final total = _chapter.pageUrls.length;
     final current = total > 0 ? _currentPageIndex + 1 : 0;
     return AnimatedPositioned(
@@ -417,9 +417,9 @@ class _ReaderPageState extends State<ReaderPage> {
           children: [
             Text(
               '$current / $total',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w600,
-                color: accent, letterSpacing: 0.4,
+                color: _goldColor, letterSpacing: 0.4,
               ),
             ),
             const SizedBox(width: 10),
@@ -438,8 +438,8 @@ class _ReaderPageState extends State<ReaderPage> {
                     textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
                     child: LinearProgressIndicator(
                       value: _progress,
-                      backgroundColor: Colors.transparent,
-                      valueColor: AlwaysStoppedAnimation<Color>(accent),
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(_goldColor),
                       minHeight: 10,
                     ),
                   ),
@@ -452,7 +452,7 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  Widget _buildChaptersDropdown(String Function(String) t, Color accent) {
+  Widget _buildChaptersDropdown(String Function(String) t, Color accent, bool dark) {
     final sorted = widget.allChapters.reversed.toList();
     return Positioned(
       top: 56, left: 0, right: 0,
@@ -624,47 +624,53 @@ class _PageImageState extends State<_PageImage>
   @override
   Widget build(BuildContext context) {
     final t      = context.read<AppProvider>().t;
-    final dark   = Theme.of(context).brightness == Brightness.dark;
-    final accent = dark ? const Color(0xFF9B5CF6) : const Color(0xFF3F5EFB);
-    return CachedNetworkImage(
-      imageUrl: widget.url,
-      fit: widget.fit,
-      width: double.infinity,
-      height: widget.fillH,
-      placeholder: (_, __) => Container(
-        color: const Color(0xFF111111),
-        height: widget.fillH ?? 300,
-        child: Center(
-          child: SizedBox(
-            width: 24, height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2, color: accent),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = isDark ? const Color(0xFF9B5CF6) : const Color(0xFF3F5EFB);
+
+    return Container(
+      color: Colors.black, // 🖤 ضمان خلفية سوداء للمكان المحيط بالصورة
+      child: CachedNetworkImage(
+        imageUrl: widget.url,
+        fit: widget.fit,
+        width: double.infinity,
+        height: widget.fillH,
+        placeholder: (_, __) => Container(
+          color: Colors.black, // 🖤 أسود أثناء التحميل
+          height: widget.fillH ?? 300,
+          child: Center(
+            child: SizedBox(
+              width: 24, height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2, color: accent),
+            ),
           ),
         ),
-      ),
-      imageBuilder: (ctx, imageProvider) {
-        _blurCtrl.forward();
-        return AnimatedBuilder(
-          animation: _blurAnim,
-          builder: (_, child) {
-            final sigma = _blurAnim.value;
-            if (sigma < 0.1) return child!;
-            return ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-              child: child,
-            );
-          },
-          child: Image(
-            image: imageProvider, fit: widget.fit,
-            width: double.infinity, height: widget.fillH,
+        imageBuilder: (ctx, imageProvider) {
+          _blurCtrl.forward();
+          return AnimatedBuilder(
+            animation: _blurAnim,
+            builder: (_, child) {
+              final sigma = _blurAnim.value;
+              if (sigma < 0.1) return child!;
+              return ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+                child: child,
+              );
+            },
+            child: Image(
+              image: imageProvider,
+              fit: widget.fit,
+              width: double.infinity,
+              height: widget.fillH,
+            ),
+          );
+        },
+        errorWidget: (_, __, ___) => Container(
+          color: Colors.black, // 🖤 أسود عند حدوث خطأ
+          height: 160,
+          child: Center(
+            child: Text(t('page_load_error'),
+                style: const TextStyle(color: Color(0x59FFFFFF), fontSize: 12)),
           ),
-        );
-      },
-      errorWidget: (_, __, ___) => Container(
-        color: const Color(0xFF111111),
-        height: 160,
-        child: Center(
-          child: Text(t('page_load_error'),
-              style: const TextStyle(color: Color(0x59FFFFFF), fontSize: 12)),
         ),
       ),
     );
