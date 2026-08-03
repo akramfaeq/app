@@ -66,7 +66,6 @@ class _MainScaffoldState extends State<MainScaffold> {
           child: SizedBox(
             height: 62,
             child: Directionality(
-              // عربي: الرئيسية يمين | إنجليزي: الرئيسية يسار
               textDirection: provider.dir,
               child: Row(
                 children: [
@@ -76,6 +75,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                     isActive: _index == 0,
                     selectedClr: selectedClr,
                     unselectedClr: unselectedClr,
+                    dark: dark,
                     onTap: () => _nav(0),
                   ),
                   _NavItem(
@@ -84,6 +84,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                     isActive: _index == 1,
                     selectedClr: selectedClr,
                     unselectedClr: unselectedClr,
+                    dark: dark,
                     onTap: () => _nav(1, sortByRating: false),
                   ),
                   _NavItem(
@@ -92,6 +93,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                     isActive: _index == 2,
                     selectedClr: selectedClr,
                     unselectedClr: unselectedClr,
+                    dark: dark,
                     onTap: () => _nav(2),
                   ),
                   _NavItem(
@@ -100,6 +102,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                     isActive: _index == 3,
                     selectedClr: selectedClr,
                     unselectedClr: unselectedClr,
+                    dark: dark,
                     onTap: () => _nav(3),
                   ),
                 ],
@@ -116,13 +119,15 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isActive;
+  final bool dark;
   final Color selectedClr;
   final Color unselectedClr;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.icon, required this.label, required this.isActive,
-    required this.selectedClr, required this.unselectedClr, required this.onTap,
+    required this.dark, required this.selectedClr,
+    required this.unselectedClr, required this.onTap,
   });
 
   @override
@@ -137,7 +142,10 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon, size: 22,
               color: isActive ? selectedClr : unselectedClr,
-              shadows: isActive ? [Shadow(color: selectedClr, blurRadius: 8)] : null,
+              // النهاري: بدون نيون glow على الأيقونة
+              shadows: (isActive && dark)
+                  ? [Shadow(color: selectedClr, blurRadius: 8)]
+                  : null,
             ),
             const SizedBox(height: 4),
             Text(
@@ -154,7 +162,10 @@ class _NavItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isActive ? selectedClr : Colors.transparent,
                 borderRadius: BorderRadius.circular(2),
-                boxShadow: isActive ? [BoxShadow(color: selectedClr, blurRadius: 16)] : null,
+                // النهاري: بدون نيون glow على المؤشر
+                boxShadow: (isActive && dark)
+                    ? [BoxShadow(color: selectedClr, blurRadius: 16)]
+                    : null,
               ),
             ),
           ],

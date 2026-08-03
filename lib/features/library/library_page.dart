@@ -7,6 +7,9 @@ import '../../models/manga_model.dart';
 import '../../services/manga_service.dart';
 import '../details/detail_page.dart';
 
+// أزرق نيلي للكاردات بالوضع النهاري (القلوب والحدود)
+const _lightCardAccent = Color(0xFF3F5EFB);
+
 class LibraryPage extends StatefulWidget {
   final bool sortByRating;
   const LibraryPage({super.key, this.sortByRating = false});
@@ -77,6 +80,8 @@ class _LibraryPageState extends State<LibraryPage>
     final dark      = Theme.of(context).brightness == Brightness.dark;
     final bgColor   = dark ? AppColors.darkBgDeep : AppColors.lightBgDeep;
     final accentClr = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
+    // أزرق نيلي للكاردات بالنهاري
+    final cardAccent = dark ? AppColors.darkAccentNeon : _lightCardAccent;
     final textClr   = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
 
     return Directionality(
@@ -129,7 +134,10 @@ class _LibraryPageState extends State<LibraryPage>
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (ctx, i) => _LibraryCard(
-                                manga: _list[i], dark: dark, accent: accentClr,
+                                manga: _list[i],
+                                dark: dark,
+                                // نمرر cardAccent للكاردات (أزرق نيلي بالنهاري)
+                                accent: cardAccent,
                               ),
                               childCount: _list.length,
                             ),
@@ -169,6 +177,8 @@ class _LibraryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textClr = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
+    final cardClr = dark ? const Color(0xFF161129) : const Color(0xFFF5F5FA);
+
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -182,11 +192,21 @@ class _LibraryCard extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                color: const Color(0xFF161129),
-                border: Border.all(color: accent.withOpacity(0.55), width: 1.5),
+                color: cardClr,
+                // النهاري: حدود أزرق نيلي خفيف بدل البنفسجي المضيء
+                border: Border.all(
+                  color: dark ? accent.withOpacity(0.55) : accent.withOpacity(0.35),
+                  width: 1.5,
+                ),
                 boxShadow: [
-                  BoxShadow(color: accent.withOpacity(0.35), blurRadius: 10, spreadRadius: 1),
-                  BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 8, offset: const Offset(0, 4)),
+                  BoxShadow(
+                    color: dark ? accent.withOpacity(0.35) : accent.withOpacity(0.12),
+                    blurRadius: 10, spreadRadius: dark ? 1 : 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(dark ? 0.5 : 0.08),
+                    blurRadius: 8, offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: ClipRRect(
@@ -197,48 +217,76 @@ class _LibraryCard extends StatelessWidget {
                     manga.cover.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: manga.cover, fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(color: const Color(0xFF161129)),
+                            placeholder: (_, __) => Container(color: cardClr),
                             errorWidget: (_, __, ___) => Container(
-                              color: const Color(0xFF161129),
-                              child: const Icon(Icons.broken_image_outlined, color: Colors.white24, size: 22),
+                              color: cardClr,
+                              child: Icon(Icons.broken_image_outlined,
+                                  color: dark ? Colors.white24 : const Color(0xFFBBBCE0),
+                                  size: 22),
                             ),
                           )
-                        : Container(color: const Color(0xFF161129)),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter, end: Alignment.topCenter,
-                            colors: [Colors.black.withOpacity(0.65), Colors.transparent],
-                            stops: const [0.0, 0.45],
+                        : Container(color: cardClr),
+
+                    // تدرج سفلي
+                    if (manga.cover.isNotEmpty)
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter, end: Alignment.topCenter,
+                              colors: [Colors.black.withOpacity(0.65), Colors.transparent],
+                              stops: const [0.0, 0.45],
+                            ),
                           ),
                         ),
                       ),
-                    ),
+
+                    // شارة التقييم — خلفية فاتحة بالنهاري لما ما في صورة
                     Positioned(
                       bottom: 8, left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.75),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFE8B85C).withOpacity(0.6), width: 1),
-                        ),
-                        child: Text('${manga.rating.toStringAsFixed(1)} ★',
-                            style: const TextStyle(fontSize: 10, color: Color(0xFFE8B85C), fontWeight: FontWeight.bold)),
-                      ),
+                      child: Builder(builder: (context) {
+                        final hasImage = manga.cover.isNotEmpty;
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: (dark || hasImage)
+                                ? Colors.black.withOpacity(0.75)
+                                : const Color(0xFFEAEBF5),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: (dark || hasImage)
+                                  ? const Color(0xFFE8B85C).withOpacity(0.6)
+                                  : const Color(0x40D97706),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            '${manga.rating.toStringAsFixed(1)} ★',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: dark ? const Color(0xFFE8B85C) : const Color(0xFFD97706),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }),
                     ),
+
+                    // ── زر القلب — أزرق نيلي بالنهاري ──
                     Positioned(
                       top: 8, right: 8,
                       child: Container(
                         width: 28, height: 28,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
+                          color: dark
+                            ? Colors.black.withOpacity(0.5)
+                            : Colors.white.withOpacity(0.85),
                           shape: BoxShape.circle,
                           border: Border.all(color: accent.withOpacity(0.6), width: 1.2),
-                          boxShadow: [BoxShadow(color: accent.withOpacity(0.35), blurRadius: 6)],
+                          boxShadow: [BoxShadow(color: accent.withOpacity(0.30), blurRadius: 6)],
                         ),
-                        child: Icon(Icons.favorite_border_rounded, color: Colors.white.withOpacity(0.9), size: 14),
+                        child: Icon(Icons.favorite_border_rounded,
+                            color: dark ? Colors.white.withOpacity(0.9) : accent, size: 14),
                       ),
                     ),
                   ],

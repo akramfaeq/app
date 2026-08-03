@@ -12,24 +12,25 @@ class MorePage extends StatefulWidget {
 
 class _MorePageState extends State<MorePage> {
 
-  static const _bg         = Color(0xFF0A0714);
-  static const _card       = Color(0xFF130F1E);
   static const _accent     = Color(0xFF9B5CF6);
   static const _accentNeon = Color(0xFFBF5FFF);
-  static const _textPrimary = Color(0xFFF0EEFF);
-  static const _textSub    = Color(0xFF7A728E);
   static const _gold       = Color(0xFFE8B85C);
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
-    final t        = provider.t;
-    final dir      = provider.dir;
+    final provider    = context.watch<AppProvider>();
+    final t           = provider.t;
+    final dir         = provider.dir;
+    final dark        = Theme.of(context).brightness == Brightness.dark;
+    final bg          = dark ? const Color(0xFF0A0714) : const Color(0xFFEDEEF4);
+    final cardClr     = dark ? const Color(0xFF130F1E) : Colors.white;
+    final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
+    final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
 
     return Directionality(
       textDirection: dir,
       child: Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: bg,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 100),
@@ -41,7 +42,7 @@ class _MorePageState extends State<MorePage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
                   child: Text(t('more_title'),
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: _textPrimary)),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textPrimary)),
                 ),
 
                 Padding(
@@ -50,22 +51,22 @@ class _MorePageState extends State<MorePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
-                      _buildAccountCard(t),
+                      _buildAccountCard(t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 10),
 
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(t('app_settings'),
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _textSub)),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textSub)),
                       ),
 
-                      _buildSettingsCard(provider, t),
+                      _buildSettingsCard(provider, t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 16),
 
-                      _buildAboutCard(t),
+                      _buildAboutCard(t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 10),
 
-                      _buildContactCard(t),
+                      _buildContactCard(t, cardClr, textSub),
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -79,13 +80,13 @@ class _MorePageState extends State<MorePage> {
   }
 
   // ── بطاقة الحساب ──
-  Widget _buildAccountCard(String Function(String) t) {
+  Widget _buildAccountCard(String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return GestureDetector(
       onTap: () => HapticFeedback.selectionClick(),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _card,
+          color: cardClr,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _accentNeon.withOpacity(0.25)),
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15)],
@@ -111,14 +112,14 @@ class _MorePageState extends State<MorePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t('account'),
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _textPrimary)),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textPrimary)),
                   const SizedBox(height: 2),
                   Text(t('account_sub'),
-                    style: const TextStyle(fontSize: 12, color: _textSub)),
+                    style: TextStyle(fontSize: 12, color: textSub)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_left_rounded, color: _textSub, size: 20),
+            Icon(Icons.chevron_left_rounded, color: textSub, size: 20),
           ],
         ),
       ),
@@ -126,10 +127,10 @@ class _MorePageState extends State<MorePage> {
   }
 
   // ── بطاقة الإعدادات ──
-  Widget _buildSettingsCard(AppProvider provider, String Function(String) t) {
+  Widget _buildSettingsCard(AppProvider provider, String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return Container(
       decoration: BoxDecoration(
-        color: _card,
+        color: cardClr,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _accent.withOpacity(0.15)),
       ),
@@ -143,6 +144,7 @@ class _MorePageState extends State<MorePage> {
             iconColor: const Color(0xFF3B82F6),
             title: t('language'),
             subtitle: t('language_current'),
+            textPrimary: textPrimary, textSub: textSub,
             trailing: GestureDetector(
               onTap: () {
                 HapticFeedback.selectionClick();
@@ -175,6 +177,7 @@ class _MorePageState extends State<MorePage> {
             title: t('day_mode'),
             subtitle: t('day_mode_sub'),
             trailing: _buildThemeToggle(provider),
+            textPrimary: textPrimary, textSub: textSub,
             onTap: () {
               HapticFeedback.selectionClick();
               provider.toggleTheme();
@@ -186,12 +189,12 @@ class _MorePageState extends State<MorePage> {
   }
 
   // ── بطاقة عن التطبيق ──
-  Widget _buildAboutCard(String Function(String) t) {
+  Widget _buildAboutCard(String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return GestureDetector(
       onTap: () { HapticFeedback.selectionClick(); _showAboutSheet(t); },
       child: Container(
         decoration: BoxDecoration(
-          color: _card,
+          color: cardClr,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: _accent.withOpacity(0.15)),
         ),
@@ -201,7 +204,8 @@ class _MorePageState extends State<MorePage> {
           iconColor: _gold,
           title: t('about'),
           subtitle: t('version'),
-          trailing: const Icon(Icons.chevron_left_rounded, color: _textSub, size: 18),
+          trailing: Icon(Icons.chevron_left_rounded, color: textSub, size: 18),
+          textPrimary: textPrimary, textSub: textSub,
           onTap: () { HapticFeedback.selectionClick(); _showAboutSheet(t); },
         ),
       ),
@@ -209,10 +213,10 @@ class _MorePageState extends State<MorePage> {
   }
 
   // ── تواصل معنا ──
-  Widget _buildContactCard(String Function(String) t) {
+  Widget _buildContactCard(String Function(String) t, Color cardClr, Color textSub) {
     return Container(
       decoration: BoxDecoration(
-        color: _card,
+        color: cardClr,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _accent.withOpacity(0.15)),
       ),
@@ -222,7 +226,7 @@ class _MorePageState extends State<MorePage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Text(t('contact_us'),
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _textSub)),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textSub)),
           ),
           Padding(
             padding: const EdgeInsets.all(14),
@@ -233,14 +237,14 @@ class _MorePageState extends State<MorePage> {
                     colors: [Color(0xFF833AB4), Color(0xFFE1306C)],
                     begin: Alignment.topLeft, end: Alignment.bottomRight,
                   ),
-                  label: 'Instagram', icon: Icons.camera_alt_outlined,
+                  label: 'Instagram', icon: Icons.camera_alt_outlined, textSub: textSub,
                 ),
                 const SizedBox(width: 10),
-                _buildSocialBtn(color: const Color(0xFF1DA1F2), label: 'Twitter', icon: Icons.alternate_email_rounded),
+                _buildSocialBtn(color: const Color(0xFF1DA1F2), label: 'Twitter', icon: Icons.alternate_email_rounded, textSub: textSub),
                 const SizedBox(width: 10),
-                _buildSocialBtn(color: const Color(0xFF25D366), label: 'WhatsApp', icon: Icons.chat_rounded),
+                _buildSocialBtn(color: const Color(0xFF25D366), label: 'WhatsApp', icon: Icons.chat_rounded, textSub: textSub),
                 const SizedBox(width: 10),
-                _buildSocialBtn(color: const Color(0xFF0088CC), label: 'Telegram', icon: Icons.send_rounded),
+                _buildSocialBtn(color: const Color(0xFF0088CC), label: 'Telegram', icon: Icons.send_rounded, textSub: textSub),
               ],
             ),
           ),
@@ -253,6 +257,7 @@ class _MorePageState extends State<MorePage> {
     required Color iconBg, required IconData icon, required Color iconColor,
     required String title, required String subtitle,
     required Widget trailing, required VoidCallback onTap,
+    required Color textPrimary, required Color textSub,
   }) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -271,9 +276,9 @@ class _MorePageState extends State<MorePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+                  Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textPrimary)),
                   const SizedBox(height: 1),
-                  Text(subtitle, style: const TextStyle(fontSize: 11, color: _textSub)),
+                  Text(subtitle, style: TextStyle(fontSize: 11, color: textSub)),
                 ],
               ),
             ),
@@ -311,7 +316,7 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  Widget _buildSocialBtn({Color? color, Gradient? gradient, required String label, required IconData icon}) {
+  Widget _buildSocialBtn({Color? color, Gradient? gradient, required String label, required IconData icon, required Color textSub}) {
     return Expanded(
       child: GestureDetector(
         onTap: () => HapticFeedback.selectionClick(),
@@ -323,7 +328,7 @@ class _MorePageState extends State<MorePage> {
               child: Icon(icon, color: Colors.white, size: 22),
             ),
             const SizedBox(height: 6),
-            Text(label, style: const TextStyle(fontSize: 10, color: _textSub)),
+            Text(label, style: TextStyle(fontSize: 10, color: textSub)),
           ],
         ),
       ),
@@ -332,6 +337,10 @@ class _MorePageState extends State<MorePage> {
 
   void _showAboutSheet(String Function(String) t) {
     HapticFeedback.selectionClick();
+    final dark        = Theme.of(context).brightness == Brightness.dark;
+    final cardClr     = dark ? const Color(0xFF130F1E) : Colors.white;
+    final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
+    final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -341,7 +350,7 @@ class _MorePageState extends State<MorePage> {
         child: Container(
           margin: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: _card,
+            color: cardClr,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: _accentNeon.withOpacity(0.2)),
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 60)],
@@ -366,8 +375,8 @@ class _MorePageState extends State<MorePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(t('about'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _textPrimary)),
-                          Text(t('version'), style: const TextStyle(fontSize: 11, color: _textSub)),
+                          Text(t('about'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textPrimary)),
+                          Text(t('version'), style: TextStyle(fontSize: 11, color: textSub)),
                         ],
                       ),
                     ),
@@ -376,7 +385,7 @@ class _MorePageState extends State<MorePage> {
                       child: Container(
                         width: 30, height: 30,
                         decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(8)),
-                        child: const Icon(Icons.close_rounded, color: _textSub, size: 16),
+                        child: Icon(Icons.close_rounded, color: textSub, size: 16),
                       ),
                     ),
                   ],
@@ -389,9 +398,9 @@ class _MorePageState extends State<MorePage> {
                   children: [
                     RichText(
                       text: TextSpan(
-                        style: const TextStyle(fontSize: 13, color: _textSub, height: 1.7),
+                        style: TextStyle(fontSize: 13, color: textSub, height: 1.7),
                         children: [
-                          const TextSpan(text: 'Manga Nova ', style: TextStyle(color: _textPrimary, fontWeight: FontWeight.w700)),
+                          TextSpan(text: 'Manga Nova ', style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700)),
                           TextSpan(text: t('about_desc')),
                         ],
                       ),
@@ -403,13 +412,13 @@ class _MorePageState extends State<MorePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(t('features_title'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textPrimary)),
+                          Text(t('features_title'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
                           const SizedBox(height: 8),
-                          Text(t('feature_1'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                          Text(t('feature_2'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                          Text(t('feature_3'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                          Text(t('feature_4'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
-                          Text(t('feature_5'), style: const TextStyle(fontSize: 12, color: _textSub, height: 1.8)),
+                          Text(t('feature_1'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_2'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_3'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_4'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_5'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
                         ],
                       ),
                     ),
@@ -422,7 +431,7 @@ class _MorePageState extends State<MorePage> {
                         border: const Border(right: BorderSide(color: Color(0xFFFF4081), width: 3)),
                       ),
                       child: Text(t('disclaimer'),
-                        style: const TextStyle(fontSize: 12, color: _textSub, height: 1.6)),
+                        style: TextStyle(fontSize: 12, color: textSub, height: 1.6)),
                     ),
                     const SizedBox(height: 14),
                     Container(
@@ -431,7 +440,7 @@ class _MorePageState extends State<MorePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(t('dev_title'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textPrimary)),
+                          Text(t('dev_title'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
                           const SizedBox(height: 6),
                           Text(t('dev_names'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _accent)),
                         ],

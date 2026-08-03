@@ -113,25 +113,50 @@ class _HomePageState extends State<HomePage>
 
               if (_loading)
                 SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5)),
+                  child: Center(
+                    child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5),
+                  ),
                 )
               else if (_error != null)
                 SliverFillRemaining(
                   child: Center(
-                    child: Text(t('error_loading'),
-                      style: const TextStyle(color: Colors.white54)),
+                    child: Text(
+                      t('error_loading'),
+                      style: TextStyle(
+                        color: dark ? Colors.white54 : AppColors.lightTextSecondary,
+                      ),
+                    ),
                   ),
                 )
               else ...[
-                SliverToBoxAdapter(child: _section(dark, provider, t('latest_releases'),
-                    Icons.access_time_rounded, const Color(0xFF8B5CF6), const Color(0x338B5CF6),
-                    _latestReleases, () => widget.onNavigate?.call(0))),
-                SliverToBoxAdapter(child: _section(dark, provider, t('top_rated'),
-                    Icons.star_rounded, AppColors.starColor, const Color(0x33E8B85C),
-                    _topRated, () => widget.onNavigate?.call(1, sortByRating: true))),
-                SliverToBoxAdapter(child: _section(dark, provider, t('manga_library'),
+                SliverToBoxAdapter(
+                  child: _section(
+                    dark, provider, t('latest_releases'),
+                    Icons.access_time_rounded,
+                    dark ? const Color(0xFF8B5CF6) : AppColors.lightAccentPrimary,
+                    dark ? const Color(0x338B5CF6) : const Color(0x1A5B5BD6),
+                    _latestReleases,
+                    () => widget.onNavigate?.call(0),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _section(
+                    dark, provider, t('top_rated'),
+                    Icons.star_rounded,
+                    dark ? AppColors.starColor : AppColors.lightGold,
+                    dark ? const Color(0x33E8B85C) : const Color(0x1AD97706),
+                    _topRated,
+                    () => widget.onNavigate?.call(1, sortByRating: true),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _section(
+                    dark, provider, t('manga_library'),
                     null, null, null,
-                    _randomManga, () => widget.onNavigate?.call(1))),
+                    _randomManga,
+                    () => widget.onNavigate?.call(1),
+                  ),
+                ),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             ],
@@ -142,50 +167,96 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _topBar(bool dark, AppProvider provider) {
-    final accent   = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
-    final neonGlow = dark ? const Color(0x40BF5FFF) : const Color(0x305B5BD6);
-    final textClr  = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
+    // ألوان النهاري مطابقة للـ HTML
+    final accent   = dark ? AppColors.darkAccentNeon   : AppColors.lightAccentPrimary;
+    final neonGlow = dark ? const Color(0x40BF5FFF)    : const Color(0x305B5BD6);
+    final textClr  = dark ? AppColors.darkTextPrimary  : AppColors.lightTextPrimary;
     final isAr     = provider.isArabic;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
-        // الأفاتار دايماً على اليسار، الاسم على اليمين — نعكسها حسب اللغة
         textDirection: isAr ? TextDirection.ltr : TextDirection.rtl,
         children: [
+          // ── أفاتار ──
           GestureDetector(
             onTap: () => widget.onNavigate?.call(3),
             child: Container(
               width: 40, height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
-                  colors: [Color(0xFF4A1F80), Color(0xFF1A1030)],
-                ),
+                // النهاري: خلفية فاتحة بدل التدرج الداكن
+                gradient: dark
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF4A1F80), Color(0xFF1A1030)],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.lightAccentPrimary.withOpacity(0.2),
+                          AppColors.lightBgCardHover,
+                        ],
+                      ),
                 border: Border.all(color: accent, width: 2),
                 boxShadow: [
                   BoxShadow(color: neonGlow, blurRadius: 16),
-                  const BoxShadow(color: Color(0x4DBF5FFF), blurRadius: 32),
+                  BoxShadow(
+                    color: dark
+                        ? const Color(0x4DBF5FFF)
+                        : AppColors.lightAccentPrimary.withOpacity(0.2),
+                    blurRadius: 32,
+                  ),
                 ],
               ),
-              child: const Icon(Icons.person_outline_rounded, color: Color(0xFFC9B6F5), size: 22),
+              child: Icon(
+                Icons.person_outline_rounded,
+                // النهاري: أيقونة بلون الأكسنت بدل اللون الفاتح الداكن
+                color: dark ? const Color(0xFFC9B6F5) : AppColors.lightAccentPrimary,
+                size: 22,
+              ),
             ),
           ),
+
           const Spacer(),
-          Text('Manga', style: TextStyle(
-            fontFamily: 'Tajawal', fontSize: 22, fontWeight: FontWeight.w900, color: textClr,
-            shadows: [Shadow(color: accent, blurRadius: 20), Shadow(color: neonGlow, blurRadius: 40)],
-          )),
+
+          // ── شعار Manga ──
+          Text(
+            'Manga',
+            style: TextStyle(
+              fontFamily: 'Tajawal',
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: textClr,
+              // النهاري: بدون text shadow حسب .light-theme * { text-shadow: none }
+              shadows: dark
+                  ? [
+                      Shadow(color: accent, blurRadius: 20),
+                      Shadow(color: neonGlow, blurRadius: 40),
+                    ]
+                  : null,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _section(bool dark, AppProvider provider, String title, IconData? icon,
-      Color? iconClr, Color? iconBg, List<MangaModel> items, VoidCallback onSeeAll) {
-    final accent   = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
-    final titleClr = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
+  Widget _section(
+    bool dark,
+    AppProvider provider,
+    String title,
+    IconData? icon,
+    Color? iconClr,
+    Color? iconBg,
+    List<MangaModel> items,
+    VoidCallback onSeeAll,
+  ) {
+    final accent   = dark ? AppColors.darkAccentNeon  : AppColors.lightAccentPrimary;
+    final titleClr = dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final seeAllClr = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
     final t        = provider.t;
 
     return Padding(
@@ -196,23 +267,39 @@ class _HomePageState extends State<HomePage>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              // العنوان على اليمين دائماً، "عرض الكل" على اليسار
               textDirection: provider.dir,
               children: [
                 if (icon != null) ...[
                   Container(
                     width: 24, height: 24,
-                    decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(
+                      color: iconBg,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Icon(icon, size: 13, color: iconClr),
                   ),
                   const SizedBox(width: 8),
                 ],
-                Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: titleClr)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: titleClr,
+                  ),
+                ),
                 const Spacer(),
                 GestureDetector(
                   onTap: onSeeAll,
-                  child: Text(t('see_all'),
-                    style: TextStyle(fontSize: 13, color: accent, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    t('see_all'),
+                    style: TextStyle(
+                      fontSize: 13,
+                      // النهاري: أزرق نيلي #3F5EFB بدل البنفسجي النيون
+                      color: seeAllClr,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -221,7 +308,6 @@ class _HomePageState extends State<HomePage>
           SizedBox(
             height: kCardH + 45,
             child: Directionality(
-              // قائمة المانغا تبدأ من اليمين بالعربي ومن اليسار بالإنجليزي
               textDirection: provider.dir,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,

@@ -8,6 +8,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/manga_service.dart';
 import '../details/detail_page.dart';
 
+// أزرق نيلي للكاردات بالوضع النهاري (القلوب والحدود)
+const _lightCardAccent = Color(0xFF3F5EFB);
+
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
@@ -28,8 +31,6 @@ class _SearchPageState extends State<SearchPage> {
   String? _selectedType;
   String? _selectedStatus;
 
-  // التصنيفات — ثابتة بالعربي/الإنجليزي (يتم الفلترة بناءً على البيانات)
-  // التصنيفات ثابتة بالعربي دائماً
   static const _genres = [
     'أكشن', 'رعب', 'دراما', 'كوميدي', 'مغامرة', 'فانتازيا',
     'رومانسي', 'خيال علمي', 'رياضة', 'نفسي',
@@ -104,8 +105,6 @@ class _SearchPageState extends State<SearchPage> {
 
   void _openFilterSheet(AppProvider provider) {
     final t      = provider.t;
-    // التصنيفات والأنواع والحالة ثابتة بالعربي دائماً
-    final genres   = _genres;
     const types    = ['مانغا', 'مانهوا'];
     const statuses = ['مستمرة', 'مكتملة'];
 
@@ -117,7 +116,7 @@ class _SearchPageState extends State<SearchPage> {
       barrierColor: Colors.black.withOpacity(0.45),
       builder: (_) {
         final dark    = Theme.of(context).brightness == Brightness.dark;
-        final accent  = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
+        final accent  = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
         final cardBg  = dark ? const Color(0xFF1A1230) : Colors.white;
         final textClr = dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
         final subClr  = dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
@@ -167,7 +166,7 @@ class _SearchPageState extends State<SearchPage> {
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 8, runSpacing: 8,
-                      children: genres.map((g) => _Chip(
+                      children: _genres.map((g) => _Chip(
                         label: g, selected: _selectedGenres.contains(g),
                         accent: accent, dark: dark, textClr: textClr,
                         onTap: () => toggleGenre(g),
@@ -227,7 +226,9 @@ class _SearchPageState extends State<SearchPage> {
 
     final dark    = Theme.of(context).brightness == Brightness.dark;
     final bg      = dark ? AppColors.darkBgDeep : AppColors.lightBgDeep;
-    final accent  = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
+    final accent  = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
+    // أزرق نيلي للكاردات بالنهاري
+    final cardAccent = dark ? AppColors.darkAccentNeon : _lightCardAccent;
     final cardBg  = dark ? AppColors.darkBgCard : AppColors.lightBgCard;
     final textClr = dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final subClr  = dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
@@ -267,7 +268,12 @@ class _SearchPageState extends State<SearchPage> {
                                   decoration: BoxDecoration(
                                     color: cardBg,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: accent.withOpacity(0.15)),
+                                    border: Border.all(
+                                      color: dark
+                                          ? Colors.transparent
+                                          : const Color(0xFF3F5EFB).withOpacity(0.35),
+                                      width: 1.5,
+                                    ),
                                   ),
                                   child: TextField(
                                     controller: _searchCtrl,
@@ -277,9 +283,9 @@ class _SearchPageState extends State<SearchPage> {
                                     decoration: InputDecoration(
                                       hintText: t('search_placeholder'),
                                       hintStyle: TextStyle(color: subClr, fontSize: 13),
-                                      // أيقونة البحث: يمين بالعربي، يسار بالإنجليزي
                                       suffixIcon: provider.isArabic
-                                          ? Icon(Icons.search_rounded, color: subClr, size: 20)
+                                          ? Icon(Icons.search_rounded,
+                                              color: dark ? subClr : const Color(0xFF3F5EFB), size: 20)
                                           : null,
                                       prefixIcon: provider.isArabic
                                           ? (_searchCtrl.text.isNotEmpty
@@ -287,7 +293,8 @@ class _SearchPageState extends State<SearchPage> {
                                                   onTap: () { _searchCtrl.clear(); _focusNode.unfocus(); },
                                                   child: Icon(Icons.close_rounded, color: subClr, size: 17))
                                               : null)
-                                          : Icon(Icons.search_rounded, color: subClr, size: 20),
+                                          : Icon(Icons.search_rounded,
+                                              color: dark ? subClr : const Color(0xFF3F5EFB), size: 20),
                                       border: InputBorder.none,
                                       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                                       isDense: true,
@@ -305,17 +312,24 @@ class _SearchPageState extends State<SearchPage> {
                                       duration: const Duration(milliseconds: 200),
                                       width: 48, height: 48,
                                       decoration: BoxDecoration(
-                                        color: _hasActiveFilters ? accent.withOpacity(0.12) : cardBg,
+                                        color: dark
+                                            ? (_hasActiveFilters ? accent.withOpacity(0.12) : cardBg)
+                                            : (_hasActiveFilters ? const Color(0xFF3F5EFB).withOpacity(0.12) : cardBg),
                                         borderRadius: BorderRadius.circular(16),
                                         border: Border.all(
-                                          color: accent.withOpacity(_hasActiveFilters ? 0.35 : 0.15),
-                                          width: 1.2,
+                                          // الليلي: حدود فقط لما في فلتر محدد
+                                          color: dark
+                                              ? (_hasActiveFilters ? accent.withOpacity(0.35) : Colors.transparent)
+                                              : const Color(0xFF3F5EFB).withOpacity(_hasActiveFilters ? 0.6 : 0.35),
+                                          width: 1.5,
                                         ),
                                       ),
                                       child: Center(
                                         child: Icon(Icons.filter_list_rounded,
                                             size: 22,
-                                            color: _hasActiveFilters ? accent : subClr),
+                                            color: dark
+                                                ? (_hasActiveFilters ? accent : subClr)
+                                                : const Color(0xFF3F5EFB)),
                                       ),
                                     ),
                                     if (_hasActiveFilters)
@@ -353,9 +367,23 @@ class _SearchPageState extends State<SearchPage> {
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                           decoration: BoxDecoration(
-                                            color: accent.withOpacity(0.15),
+                                            // ليلي: بنفسجي | نهاري: أزرق نيلي
+                                            color: dark
+                                                ? accent.withOpacity(0.15)
+                                                : const Color(0xFF3F5EFB).withOpacity(0.12),
                                             borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: accent.withOpacity(0.35), width: 1),
+                                            border: Border.all(
+                                              color: dark ? accent : const Color(0xFF3F5EFB),
+                                              width: 1.5,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: dark
+                                                    ? accent.withOpacity(0.3)
+                                                    : const Color(0xFF3F5EFB).withOpacity(0.25),
+                                                blurRadius: 8,
+                                              ),
+                                            ],
                                           ),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -363,13 +391,13 @@ class _SearchPageState extends State<SearchPage> {
                                               Text(lbl,
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: dark ? accent : textClr,
+                                                  color: dark ? accent : const Color(0xFF3F5EFB),
                                                   fontWeight: FontWeight.w700,
                                                 ),
                                               ),
                                               const SizedBox(width: 5),
                                               Icon(Icons.close_rounded, size: 13,
-                                                  color: dark ? accent : subClr),
+                                                  color: dark ? accent : const Color(0xFF3F5EFB)),
                                             ],
                                           ),
                                         ),
@@ -416,7 +444,8 @@ class _SearchPageState extends State<SearchPage> {
                       childAspectRatio: 110 / 185,
                     ),
                     delegate: SliverChildBuilderDelegate(
-                      (ctx, i) => _SearchCard(manga: _results[i], dark: dark, accent: accent),
+                      // نمرر cardAccent للكاردات (أزرق نيلي بالنهاري)
+                      (ctx, i) => _SearchCard(manga: _results[i], dark: dark, accent: cardAccent),
                       childCount: _results.length,
                     ),
                   ),
@@ -478,12 +507,16 @@ class _Chip extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected ? accent.withOpacity(0.8) : accent.withOpacity(0.15),
-            width: 1.2,
+            width: selected ? 1.5 : 1.2,
           ),
+          boxShadow: selected ? [
+            BoxShadow(color: accent.withOpacity(0.3), blurRadius: 8),
+          ] : null,
         ),
         child: Text(label,
           style: TextStyle(
             fontSize: 12, fontWeight: FontWeight.w700,
+            // المحدد: دائماً accent (أزرق نيلي) | غير محدد: نص عادي
             color: selected ? accent : textClr,
           ),
         ),
@@ -502,6 +535,8 @@ class _SearchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textClr = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
+    final cardClr = dark ? const Color(0xFF161129) : const Color(0xFFF5F5FA);
+
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -515,11 +550,21 @@ class _SearchCard extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                color: const Color(0xFF161129),
-                border: Border.all(color: accent.withOpacity(0.55), width: 1.5),
+                color: cardClr,
+                // النهاري: حدود أزرق نيلي خفيف
+                border: Border.all(
+                  color: dark ? accent.withOpacity(0.55) : accent.withOpacity(0.35),
+                  width: 1.5,
+                ),
                 boxShadow: [
-                  BoxShadow(color: accent.withOpacity(0.35), blurRadius: 10, spreadRadius: 1),
-                  BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 8, offset: const Offset(0, 4)),
+                  BoxShadow(
+                    color: dark ? accent.withOpacity(0.35) : accent.withOpacity(0.12),
+                    blurRadius: 10, spreadRadius: dark ? 1 : 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(dark ? 0.5 : 0.08),
+                    blurRadius: 8, offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: ClipRRect(
@@ -530,48 +575,76 @@ class _SearchCard extends StatelessWidget {
                     manga.cover.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: manga.cover, fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(color: const Color(0xFF161129)),
+                            placeholder: (_, __) => Container(color: cardClr),
                             errorWidget: (_, __, ___) => Container(
-                              color: const Color(0xFF161129),
-                              child: const Icon(Icons.broken_image_outlined, color: Colors.white24, size: 22),
+                              color: cardClr,
+                              child: Icon(Icons.broken_image_outlined,
+                                  color: dark ? Colors.white24 : const Color(0xFFBBBCE0),
+                                  size: 22),
                             ),
                           )
-                        : Container(color: const Color(0xFF161129)),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter, end: Alignment.topCenter,
-                            colors: [Colors.black.withOpacity(0.65), Colors.transparent],
-                            stops: const [0.0, 0.45],
+                        : Container(color: cardClr),
+
+                    // تدرج سفلي
+                    if (manga.cover.isNotEmpty)
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter, end: Alignment.topCenter,
+                              colors: [Colors.black.withOpacity(0.65), Colors.transparent],
+                              stops: const [0.0, 0.45],
+                            ),
                           ),
                         ),
                       ),
-                    ),
+
+                    // شارة التقييم — خلفية فاتحة بالنهاري لما ما في صورة
                     Positioned(
                       bottom: 8, left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.75),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFE8B85C).withOpacity(0.6), width: 1),
-                        ),
-                        child: Text('${manga.rating.toStringAsFixed(1)} ★',
-                            style: const TextStyle(fontSize: 10, color: Color(0xFFE8B85C), fontWeight: FontWeight.bold)),
-                      ),
+                      child: Builder(builder: (context) {
+                        final hasImage = manga.cover.isNotEmpty;
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: (dark || hasImage)
+                                ? Colors.black.withOpacity(0.75)
+                                : const Color(0xFFEAEBF5),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: (dark || hasImage)
+                                  ? const Color(0xFFE8B85C).withOpacity(0.6)
+                                  : const Color(0x40D97706),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            '${manga.rating.toStringAsFixed(1)} ★',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: dark ? const Color(0xFFE8B85C) : const Color(0xFFD97706),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }),
                     ),
+
+                    // ── زر القلب — أزرق نيلي بالنهاري ──
                     Positioned(
                       top: 8, right: 8,
                       child: Container(
                         width: 28, height: 28,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
+                          color: dark
+                            ? Colors.black.withOpacity(0.5)
+                            : Colors.white.withOpacity(0.85),
                           shape: BoxShape.circle,
                           border: Border.all(color: accent.withOpacity(0.6), width: 1.2),
-                          boxShadow: [BoxShadow(color: accent.withOpacity(0.35), blurRadius: 6)],
+                          boxShadow: [BoxShadow(color: accent.withOpacity(0.30), blurRadius: 6)],
                         ),
-                        child: Icon(Icons.favorite_border_rounded, color: Colors.white.withOpacity(0.9), size: 14),
+                        child: Icon(Icons.favorite_border_rounded,
+                            color: dark ? Colors.white.withOpacity(0.9) : accent, size: 14),
                       ),
                     ),
                   ],

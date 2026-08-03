@@ -17,12 +17,10 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
   ReadingProgress? _progress;
   bool _loading = true;
 
-  static const _accent      = Color(0xFF9B5CF6);
-  static const _gold        = Color(0xFFE8B85C);
-  static const _card        = Color(0xFF130F1E);
-  static const _cardBorder  = Color(0x269B5CF6);
-  static const _textPrimary = Color(0xFFFFFFFF);
-  static const _textSub     = Color(0x99FFFFFF);
+  // ألوان ثابتة للداكن فقط
+  static const _accentDark     = Color(0xFF9B5CF6);
+  static const _accentLight    = Color(0xFF3F5EFB); // أزرق نيلي للنهاري
+  static const _gold            = Color(0xFFE8B85C);
 
   @override
   void initState() { super.initState(); _load(); }
@@ -43,6 +41,15 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
     final t        = provider.t;
     final dir      = provider.dir;
     final isAr     = provider.isArabic;
+    final dark     = Theme.of(context).brightness == Brightness.dark;
+
+    // ألوان حسب الثيم
+    final accent      = dark ? _accentDark : _accentLight;
+    final accentBg    = dark ? const Color(0x339B5CF6) : const Color(0x1A3F5EFB);
+    final cardBorder  = dark ? const Color(0x269B5CF6) : const Color(0x263F5EFB);
+    final cardClr     = dark ? const Color(0xFF130F1E) : Colors.white;
+    final textPrimary = dark ? Colors.white : const Color(0xFF111111);
+    final textSub     = dark ? const Color(0x99FFFFFF) : const Color(0xFF6B7280);
 
     // نص الفصل حسب اللغة
     final chapterText = isAr
@@ -62,27 +69,31 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // عنوان القسم
+            // ── عنوان القسم ──
             Row(
               children: [
                 Container(
                   width: 24, height: 24,
                   decoration: BoxDecoration(
-                    color: const Color(0x339B5CF6),
+                    color: accentBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.play_arrow_rounded, size: 13, color: _accent),
+                  child: Icon(Icons.play_arrow_rounded, size: 13, color: accent),
                 ),
                 const SizedBox(width: 8),
-                Text(t('continue_reading'),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
-                      color: _textPrimary, fontFamily: 'Tajawal')),
+                Text(
+                  t('continue_reading'),
+                  style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700,
+                    color: textPrimary, fontFamily: 'Tajawal',
+                  ),
+                ),
               ],
             ),
 
             const SizedBox(height: 8),
 
-            // الكارد
+            // ── الكارد ──
             GestureDetector(
               onTap: () { HapticFeedback.selectionClick(); widget.onTap(p); },
               child: Container(
@@ -90,10 +101,15 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                 height: 72,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: _card,
+                  color: cardClr,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: _cardBorder, width: 1),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 3))],
+                  border: Border.all(color: cardBorder, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(dark ? 0.4 : 0.06),
+                      blurRadius: 8, offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -102,17 +118,25 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         child: Row(
                           children: [
-                            // صورة — يمين بالعربي، يسار بالإنجليزي (تلقائي مع Directionality)
+                            // صورة الغلاف
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: CachedNetworkImage(
                                 imageUrl: p.mangaCover,
                                 width: 42, height: 54,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(width: 42, height: 54, color: const Color(0xFF1D1630)),
+                                placeholder: (_, __) => Container(
+                                  width: 42, height: 54,
+                                  color: dark ? const Color(0xFF1D1630) : const Color(0xFFEAEBF5),
+                                ),
                                 errorWidget: (_, __, ___) => Container(
-                                  width: 42, height: 54, color: const Color(0xFF1D1630),
-                                  child: const Icon(Icons.image_not_supported, color: Colors.white24, size: 16),
+                                  width: 42, height: 54,
+                                  color: dark ? const Color(0xFF1D1630) : const Color(0xFFEAEBF5),
+                                  child: Icon(
+                                    Icons.image_not_supported,
+                                    color: dark ? Colors.white24 : const Color(0xFFBBBCE0),
+                                    size: 16,
+                                  ),
                                 ),
                               ),
                             ),
@@ -123,25 +147,35 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(p.mangaTitle,
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-                                        color: _textPrimary, fontFamily: 'Tajawal',
-                                        overflow: TextOverflow.ellipsis),
-                                    maxLines: 1),
+                                  Text(
+                                    p.mangaTitle,
+                                    style: TextStyle(
+                                      fontSize: 13, fontWeight: FontWeight.bold,
+                                      color: textPrimary, fontFamily: 'Tajawal',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    maxLines: 1,
+                                  ),
                                   const SizedBox(height: 2),
-                                  Text(chapterText,
-                                    style: const TextStyle(fontSize: 11, color: _textSub, fontFamily: 'Tajawal')),
+                                  Text(
+                                    chapterText,
+                                    style: TextStyle(
+                                      fontSize: 11, color: textSub, fontFamily: 'Tajawal',
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // زر play
+                            // ── زر Play ──
                             Container(
                               width: 34, height: 34,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: _accent,
-                                boxShadow: [BoxShadow(color: _accent.withOpacity(0.35), blurRadius: 6)],
+                                color: accent,
+                                boxShadow: [
+                                  BoxShadow(color: accent.withOpacity(0.35), blurRadius: 6),
+                                ],
                               ),
                               child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
                             ),
@@ -149,14 +183,18 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                         ),
                       ),
                     ),
-                    // شريط التقدم — يمتلئ حسب اتجاه اللغة
+                    // شريط التقدم
                     Directionality(
                       textDirection: dir,
                       child: LinearProgressIndicator(
                         value: p.progress.clamp(0.0, 1.0),
                         minHeight: 2.5,
-                        backgroundColor: Colors.white.withOpacity(0.06),
-                        valueColor: const AlwaysStoppedAnimation<Color>(_gold),
+                        backgroundColor: dark
+                            ? Colors.white.withOpacity(0.06)
+                            : Colors.black.withOpacity(0.08),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          dark ? _gold : accent,
+                        ),
                       ),
                     ),
                   ],

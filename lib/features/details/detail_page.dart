@@ -105,7 +105,7 @@ class _DetailPageState extends State<DetailPage> {
     final dark    = Theme.of(context).brightness == Brightness.dark;
     final bg      = dark ? AppColors.darkBgDeep : AppColors.lightBgDeep;
     final cardBg  = dark ? AppColors.darkBgCard : AppColors.lightBgCard;
-    final accent  = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
+    final accent  = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
     final textClr = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
     final subClr  = dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
 
@@ -177,10 +177,19 @@ class _DetailPageState extends State<DetailPage> {
                               child: Container(
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(colors: [Color(0xFF8B3CF6), Color(0xFFA855F7)]),
+                                  gradient: LinearGradient(
+                                    colors: dark
+                                        ? [const Color(0xFF8B3CF6), const Color(0xFFA855F7)]
+                                        : [const Color(0xFF3F5EFB), const Color(0xFF5B7BFF)],
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
-                                    BoxShadow(color: const Color(0xFF8B3CF6).withOpacity(0.5), blurRadius: 20),
+                                    BoxShadow(
+                                      color: dark
+                                          ? const Color(0xFF8B3CF6).withOpacity(0.5)
+                                          : const Color(0xFF3F5EFB).withOpacity(0.4),
+                                      blurRadius: 20,
+                                    ),
                                   ],
                                 ),
                                 child: Row(
@@ -457,7 +466,9 @@ class _HeroCover extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.25)),
+                  border: Border.all(color: dark
+                      ? const Color(0xFF8B5CF6).withOpacity(0.25)
+                      : const Color(0xFF3F5EFB).withOpacity(0.25)),
                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 14)],
                 ),
                 child: Icon(
@@ -490,7 +501,7 @@ class _InfoCard extends StatelessWidget {
         ? (value == 'مكتملة' || value == 'Completed' || value == 'Cancelled' || value == 'ملغاة'
             ? const Color(0xFFF87171)
             : const Color(0xFF4ADE80))
-        : Colors.white;
+        : (dark ? Colors.white : textClr);
 
     return Expanded(
       child: Container(
@@ -498,11 +509,17 @@ class _InfoCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(
+            color: dark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.07),
+          ),
         ),
         child: Column(
           children: [
-            Text(label, style: const TextStyle(fontSize: 9.5, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w500)),
+            Text(label, style: TextStyle(
+              fontSize: 9.5,
+              color: dark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            )),
             const SizedBox(height: 5),
             Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: valueColor)),
           ],
