@@ -67,6 +67,8 @@ class AppProvider extends ChangeNotifier {
       'about': 'عن التطبيق',
       'version': 'الإصدار 1.0.0',
       'contact_us': 'تواصل معنا',
+      'favorites': 'المفضلة',  // عربي
+     
 
       // ── Detail Page ──
       'startReading': 'ابدأ القراءة',
@@ -138,7 +140,7 @@ class AppProvider extends ChangeNotifier {
       'about': 'About',
       'version': 'Version 1.0.0',
       'contact_us': 'Contact Us',
-
+       'favorites': 'Favorites', // إنجليزي
       // ── Detail Page ──
       'startReading': 'Start Reading',
       'chapters': 'Chapters',

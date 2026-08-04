@@ -1,35 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_provider.dart';
-import '../../services/auth_service.dart';
-import '../auth/auth_page.dart';
+import '../favorites/favorites_page.dart';
 
 class MorePage extends StatefulWidget {
   const MorePage({super.key});
+
   @override
   State<MorePage> createState() => _MorePageState();
 }
 
 class _MorePageState extends State<MorePage> {
-  static const _gold = Color(0xFFE8B85C);
-  late final _authSub = AuthService.authStateChanges.listen((_) {
-    if (mounted) setState(() {});
-  });
 
-  @override
-  void initState() {
-    super.initState();
-    _authSub; // تفعيل الـ listener
-  }
-
-  @override
-  void dispose() {
-    _authSub.cancel();
-    super.dispose();
-  }
+  static const _accent     = Color(0xFF9B5CF6);
+  static const _accentNeon = Color(0xFFBF5FFF);
+  static const _gold       = Color(0xFFE8B85C);
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +27,6 @@ class _MorePageState extends State<MorePage> {
     final cardClr     = dark ? const Color(0xFF130F1E) : Colors.white;
     final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
     final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
-    final accent      = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
-    final accentNeon  = dark ? const Color(0xFFBF5FFF) : const Color(0xFF3F5EFB);
-    final borderClr   = accent.withOpacity(0.15);
 
     return Directionality(
       textDirection: dir,
@@ -55,28 +38,81 @@ class _MorePageState extends State<MorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
+                // هيدر
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
                   child: Text(t('more_title'),
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textPrimary)),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildAccountCard(t, dark, cardClr, textPrimary, textSub, accent, accentNeon),
+
+                      _buildAccountCard(t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 10),
+
+                      // ── زر المفضلة ──
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => const FavoritesPage()));
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: cardClr,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE85A78).withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 46, height: 46,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE85A78).withOpacity(0.12),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFE85A78).withOpacity(0.4), width: 1.5),
+                                ),
+                                child: const Icon(Icons.favorite_rounded, color: Color(0xFFE85A78), size: 22),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('المفضلة',
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textPrimary)),
+                                    const SizedBox(height: 2),
+                                    Text('قائمة المانغا المفضلة لديك',
+                                      style: TextStyle(fontSize: 12, color: textSub)),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.chevron_left_rounded, color: textSub, size: 20),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(t('app_settings'),
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textSub)),
                       ),
-                      _buildSettingsCard(provider, t, dark, cardClr, textPrimary, textSub, borderClr),
+
+                      _buildSettingsCard(provider, t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 16),
-                      _buildAboutCard(t, cardClr, textPrimary, textSub, borderClr),
+
+                      _buildAboutCard(t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 10),
-                      _buildContactCard(t, cardClr, textSub, borderClr),
+
+                      _buildContactCard(t, cardClr, textSub),
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -89,105 +125,65 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  Widget _buildAccountCard(String Function(String) t, bool dark, Color cardClr,
-      Color textPrimary, Color textSub, Color accent, Color accentNeon) {
-    final isLoggedIn = AuthService.isLoggedIn;
-    final name       = AuthService.displayName;
-    final avatarUrl  = AuthService.avatarUrl;
-
+  // ── بطاقة الحساب ──
+  Widget _buildAccountCard(String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        if (!isLoggedIn) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const AuthPage()));
-        }
-      },
+      onTap: () => HapticFeedback.selectionClick(),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: cardClr,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accentNeon.withOpacity(0.25)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(dark ? 0.3 : 0.06), blurRadius: 15)],
+          border: Border.all(color: _accentNeon.withOpacity(0.25)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15)],
         ),
         child: Row(
           children: [
-            // أفاتار
             Container(
               width: 50, height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   begin: Alignment.topLeft, end: Alignment.bottomRight,
-                  colors: dark
-                      ? [const Color(0xFF4A1F80), const Color(0xFF1A1030)]
-                      : [accent.withOpacity(0.7), accent],
+                  colors: [Color(0xFF4A1F80), Color(0xFF1A1030)],
                 ),
-                border: Border.all(color: accentNeon, width: 2),
-                boxShadow: [BoxShadow(color: accentNeon.withOpacity(0.25), blurRadius: 14)],
+                border: Border.all(color: _accentNeon, width: 2),
+                boxShadow: [BoxShadow(color: _accentNeon.withOpacity(0.25), blurRadius: 14)],
               ),
-              child: avatarUrl != null
-                  ? ClipOval(child: Image.network(avatarUrl, fit: BoxFit.cover))
-                  : Icon(Icons.person_outline_rounded,
-                      color: dark ? const Color(0xFFC084FC) : Colors.white, size: 24),
+              child: const Icon(Icons.person_outline_rounded, color: Color(0xFFC084FC), size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    isLoggedIn ? (name.isNotEmpty ? name : t('account')) : t('account'),
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textPrimary),
-                  ),
+                  Text(t('account'),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textPrimary)),
                   const SizedBox(height: 2),
-                  Text(
-                    isLoggedIn
-                        ? (AuthService.currentUser?.email ?? '')
-                        : t('account_sub'),
-                    style: TextStyle(fontSize: 12, color: textSub),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(t('account_sub'),
+                    style: TextStyle(fontSize: 12, color: textSub)),
                 ],
               ),
             ),
-            if (isLoggedIn)
-              GestureDetector(
-                onTap: () async {
-                  HapticFeedback.selectionClick();
-                  await AuthService.signOut();
-                  setState(() {});
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
-                  ),
-                  child: const Text('خروج',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.redAccent)),
-                ),
-              )
-            else
-              Icon(Icons.chevron_left_rounded, color: textSub, size: 20),
+            Icon(Icons.chevron_left_rounded, color: textSub, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSettingsCard(AppProvider provider, String Function(String) t, bool dark,
-      Color cardClr, Color textPrimary, Color textSub, Color borderClr) {
+  // ── بطاقة الإعدادات ──
+  Widget _buildSettingsCard(AppProvider provider, String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return Container(
       decoration: BoxDecoration(
         color: cardClr,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderClr),
+        border: Border.all(color: _accent.withOpacity(0.15)),
       ),
       child: Column(
         children: [
+
+          // اللغة
           _buildRowItem(
             iconBg: const Color(0x263B82F6),
             icon: Icons.language_rounded,
@@ -196,7 +192,10 @@ class _MorePageState extends State<MorePage> {
             subtitle: t('language_current'),
             textPrimary: textPrimary, textSub: textSub,
             trailing: GestureDetector(
-              onTap: () { HapticFeedback.selectionClick(); provider.changeLanguage(provider.isArabic ? 'en' : 'ar'); },
+              onTap: () {
+                HapticFeedback.selectionClick();
+                provider.changeLanguage(provider.isArabic ? 'en' : 'ar');
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
@@ -208,9 +207,15 @@ class _MorePageState extends State<MorePage> {
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF3B82F6))),
               ),
             ),
-            onTap: () { HapticFeedback.selectionClick(); provider.changeLanguage(provider.isArabic ? 'en' : 'ar'); },
+            onTap: () {
+              HapticFeedback.selectionClick();
+              provider.changeLanguage(provider.isArabic ? 'en' : 'ar');
+            },
           ),
-          Divider(height: 1, color: borderClr, indent: 16, endIndent: 16),
+
+          Divider(height: 1, color: _accent.withOpacity(0.1), indent: 16, endIndent: 16),
+
+          // الثيم
           _buildRowItem(
             iconBg: const Color(0x1F4F6EF7),
             icon: provider.isLightTheme ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
@@ -219,22 +224,25 @@ class _MorePageState extends State<MorePage> {
             subtitle: t('day_mode_sub'),
             trailing: _buildThemeToggle(provider),
             textPrimary: textPrimary, textSub: textSub,
-            onTap: () { HapticFeedback.selectionClick(); provider.toggleTheme(); },
+            onTap: () {
+              HapticFeedback.selectionClick();
+              provider.toggleTheme();
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAboutCard(String Function(String) t, Color cardClr,
-      Color textPrimary, Color textSub, Color borderClr) {
+  // ── بطاقة عن التطبيق ──
+  Widget _buildAboutCard(String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return GestureDetector(
       onTap: () { HapticFeedback.selectionClick(); _showAboutSheet(t); },
       child: Container(
         decoration: BoxDecoration(
           color: cardClr,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderClr),
+          border: Border.all(color: _accent.withOpacity(0.15)),
         ),
         child: _buildRowItem(
           iconBg: _gold.withOpacity(0.15),
@@ -250,12 +258,13 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  Widget _buildContactCard(String Function(String) t, Color cardClr, Color textSub, Color borderClr) {
+  // ── تواصل معنا ──
+  Widget _buildContactCard(String Function(String) t, Color cardClr, Color textSub) {
     return Container(
       decoration: BoxDecoration(
         color: cardClr,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderClr),
+        border: Border.all(color: _accent.withOpacity(0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,10 +278,13 @@ class _MorePageState extends State<MorePage> {
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                _buildSocialBtn(gradient: const LinearGradient(
+                _buildSocialBtn(
+                  gradient: const LinearGradient(
                     colors: [Color(0xFF833AB4), Color(0xFFE1306C)],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight),
-                  label: 'Instagram', icon: Icons.camera_alt_outlined, textSub: textSub),
+                    begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  ),
+                  label: 'Instagram', icon: Icons.camera_alt_outlined, textSub: textSub,
+                ),
                 const SizedBox(width: 10),
                 _buildSocialBtn(color: const Color(0xFF1DA1F2), label: 'Twitter', icon: Icons.alternate_email_rounded, textSub: textSub),
                 const SizedBox(width: 10),
@@ -375,9 +387,6 @@ class _MorePageState extends State<MorePage> {
     final cardClr     = dark ? const Color(0xFF130F1E) : Colors.white;
     final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
     final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
-    final accent      = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
-    final accentNeon  = dark ? const Color(0xFFBF5FFF) : const Color(0xFF3F5EFB);
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -389,7 +398,7 @@ class _MorePageState extends State<MorePage> {
           decoration: BoxDecoration(
             color: cardClr,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: accentNeon.withOpacity(0.2)),
+            border: Border.all(color: _accentNeon.withOpacity(0.2)),
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 60)],
           ),
           child: Column(
@@ -397,7 +406,9 @@ class _MorePageState extends State<MorePage> {
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                decoration: BoxDecoration(border: Border(bottom: BorderSide(color: accentNeon.withOpacity(0.1)))),
+                decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: _accentNeon.withOpacity(0.1))),
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -406,13 +417,15 @@ class _MorePageState extends State<MorePage> {
                       child: const Icon(Icons.info_outline_rounded, color: _gold, size: 18),
                     ),
                     const SizedBox(width: 10),
-                    Expanded(child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(t('about'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textPrimary)),
-                        Text(t('version'), style: TextStyle(fontSize: 11, color: textSub)),
-                      ],
-                    )),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(t('about'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textPrimary)),
+                          Text(t('version'), style: TextStyle(fontSize: 11, color: textSub)),
+                        ],
+                      ),
+                    ),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
@@ -429,24 +442,29 @@ class _MorePageState extends State<MorePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    RichText(text: TextSpan(
-                      style: TextStyle(fontSize: 13, color: textSub, height: 1.7),
-                      children: [
-                        TextSpan(text: 'Manga Nova ', style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700)),
-                        TextSpan(text: t('about_desc')),
-                      ],
-                    )),
+                    RichText(
+                      text: TextSpan(
+                        style: TextStyle(fontSize: 13, color: textSub, height: 1.7),
+                        children: [
+                          TextSpan(text: 'Manga Nova ', style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700)),
+                          TextSpan(text: t('about_desc')),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(color: _accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(t('features_title'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
                           const SizedBox(height: 8),
-                          for (var i = 1; i <= 5; i++)
-                            Text(t('feature_$i'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_1'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_2'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_3'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_4'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
+                          Text(t('feature_5'), style: TextStyle(fontSize: 12, color: textSub, height: 1.8)),
                         ],
                       ),
                     ),
@@ -458,18 +476,19 @@ class _MorePageState extends State<MorePage> {
                         borderRadius: BorderRadius.circular(8),
                         border: const Border(right: BorderSide(color: Color(0xFFFF4081), width: 3)),
                       ),
-                      child: Text(t('disclaimer'), style: TextStyle(fontSize: 12, color: textSub, height: 1.6)),
+                      child: Text(t('disclaimer'),
+                        style: TextStyle(fontSize: 12, color: textSub, height: 1.6)),
                     ),
                     const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(color: _accentNeon.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(t('dev_title'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
                           const SizedBox(height: 6),
-                          Text(t('dev_names'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: accent)),
+                          Text(t('dev_names'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _accent)),
                         ],
                       ),
                     ),

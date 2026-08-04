@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/manga_model.dart';
+import '../../services/favorites_service.dart';
 
 const double kCardW = 110.0;
 const double kCardH = 158.0;
@@ -108,18 +110,49 @@ class _MangaCardSkeletonState extends State<MangaCardSkeleton>
   }
 }
 
-class _CoverImage extends StatelessWidget {
+// ── كارد الغلاف مع زر القلب الحقيقي ──
+class _CoverImage extends StatefulWidget {
   final MangaModel manga;
   final bool isDark;
   const _CoverImage({required this.manga, required this.isDark});
 
   @override
+  State<_CoverImage> createState() => _CoverImageState();
+}
+
+class _CoverImageState extends State<_CoverImage> {
+  bool _isFav = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    await FavoritesService.load();
+    if (mounted) setState(() => _isFav = FavoritesService.isFavorite(widget.manga.id));
+  }
+
+  Future<void> _toggle() async {
+    HapticFeedback.selectionClick();
+    await FavoritesService.toggle(widget.manga);
+    if (mounted) setState(() => _isFav = FavoritesService.isFavorite(widget.manga.id));
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark      = widget.isDark;
+    final manga       = widget.manga;
     final cardBg      = isDark ? const Color(0xFF161129) : const Color(0xFFF5F5FA);
     final border      = isDark ? const Color(0x40BF5FFF) : const Color(0x403F5EFB);
     final neonGlow    = isDark ? const Color(0x40BF5FFF) : const Color(0x153F5EFB);
-    final heartBorder = isDark ? const Color(0x80BF5FFF) : const Color(0x803F5EFB);
-    final heartGlow   = isDark ? const Color(0x4DBF5FFF) : const Color(0x303F5EFB);
+    final heartBorder = _isFav
+        ? const Color(0xFFE85A78)
+        : (isDark ? const Color(0x80BF5FFF) : const Color(0x803F5EFB));
+    final heartGlow   = _isFav
+        ? const Color(0x40E85A78)
+        : (isDark ? const Color(0x4DBF5FFF) : const Color(0x303F5EFB));
     final hasImage    = manga.cover.isNotEmpty;
 
     return Container(
@@ -151,7 +184,7 @@ class _CoverImage extends StatelessWidget {
                   )
                 : Container(color: cardBg),
 
-            // تدرج أسود فقط لما في صورة — بالنهاري بدون صورة لا تدرج
+            // تدرج سفلي
             if (hasImage)
               Positioned.fill(
                 child: DecoratedBox(
@@ -165,51 +198,47 @@ class _CoverImage extends StatelessWidget {
                 ),
               ),
 
-            // شارة التقييم — خلفية فاتحة بالنهاري لما ما في صورة
+            // شارة التقييم
             Positioned(
               bottom: 7, left: 7,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: (isDark || hasImage)
-                      ? Colors.black.withOpacity(0.6)
-                      : const Color(0xFFEAEBF5),
+                  color: (isDark || hasImage) ? Colors.black.withOpacity(0.6) : const Color(0xFFEAEBF5),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: (isDark || hasImage)
-                        ? const Color(0x59E8B85C)
-                        : const Color(0x40D97706),
+                    color: (isDark || hasImage) ? const Color(0x59E8B85C) : const Color(0x40D97706),
                   ),
                 ),
-                child: Text(
-                  '★ ${manga.rating.toStringAsFixed(1)}',
-                  style: TextStyle(
-                    fontSize: 10,
+                child: Text('★ ${manga.rating.toStringAsFixed(1)}',
+                  style: TextStyle(fontSize: 10,
                     color: isDark ? AppColors.starColor : const Color(0xFFD97706),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                    fontWeight: FontWeight.w800)),
               ),
             ),
 
-            // زر القلب
+            // ── زر القلب الحقيقي ──
             Positioned(
               top: 7, right: 7,
-              child: Container(
-                width: 28, height: 28,
-                decoration: BoxDecoration(
-                  // النهاري: خلفية فاتحة شفافة بدل الأسود
-                  color: isDark
-                      ? Colors.black.withOpacity(0.55)
-                      : Colors.white.withOpacity(0.85),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: heartBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: heartGlow, blurRadius: 8)],
+              child: GestureDetector(
+                onTap: _toggle,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 28, height: 28,
+                  decoration: BoxDecoration(
+                    color: _isFav
+                        ? const Color(0xFFE85A78).withOpacity(0.9)
+                        : (isDark ? Colors.black.withOpacity(0.55) : Colors.white.withOpacity(0.85)),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: heartBorder, width: 1.5),
+                    boxShadow: [BoxShadow(color: heartGlow, blurRadius: 8)],
+                  ),
+                  child: Icon(
+                    _isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    color: _isFav ? Colors.white : (isDark ? Colors.white : const Color(0xFF3F5EFB)),
+                    size: 13,
+                  ),
                 ),
-                child: Icon(Icons.favorite_border_rounded,
-                  // النهاري: أيقونة أزرق نيلي بدل أبيض
-                  color: isDark ? Colors.white : const Color(0xFF3F5EFB),
-                  size: 13),
               ),
             ),
           ],
