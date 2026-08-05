@@ -217,26 +217,36 @@ class _CoverImageState extends State<_CoverImage> {
               ),
             ),
 
-            // ── زر القلب الحقيقي ──
+            // ── زر القلب - نفس الـ HTML ──
             Positioned(
-              top: 7, right: 7,
+              top: 6, right: 6,
               child: GestureDetector(
                 onTap: _toggle,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: 28, height: 28,
+                  width: 26, height: 26,
                   decoration: BoxDecoration(
-                    color: _isFav
-                        ? const Color(0xFFE85A78).withOpacity(0.9)
-                        : (isDark ? Colors.black.withOpacity(0.55) : Colors.white.withOpacity(0.85)),
+                    // نفس HTML: rgba(0,0,0,0.6) دائماً
+                    color: Colors.black.withOpacity(0.6),
                     shape: BoxShape.circle,
-                    border: Border.all(color: heartBorder, width: 1.5),
-                    boxShadow: [BoxShadow(color: heartGlow, blurRadius: 8)],
+                    border: Border.all(
+                      // نفس HTML: بنفسجي لما مش مفضل، وردي لما مفضل
+                      color: _isFav
+                          ? const Color(0xFFE63946).withOpacity(0.7)
+                          : const Color(0xFFC084FC).withOpacity(0.3),
+                      width: 1,
+                    ),
+                    boxShadow: _isFav ? [
+                      BoxShadow(color: const Color(0xFFE63946).withOpacity(0.35), blurRadius: 8),
+                    ] : null,
                   ),
-                  child: Icon(
-                    _isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                    color: _isFav ? Colors.white : (isDark ? Colors.white : const Color(0xFF3F5EFB)),
-                    size: 13,
+                  child: Center(
+                    child: Icon(
+                      _isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      // أحمر لما مفضل، أبيض لما مش مفضل - نفس الـ HTML
+                      color: _isFav ? const Color(0xFFE63946) : Colors.white,
+                      size: 13,
+                    ),
                   ),
                 ),
               ),
