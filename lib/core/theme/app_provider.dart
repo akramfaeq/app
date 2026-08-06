@@ -67,8 +67,28 @@ class AppProvider extends ChangeNotifier {
       'about': 'عن التطبيق',
       'version': 'الإصدار 1.0.0',
       'contact_us': 'تواصل معنا',
-      'favorites': 'المفضلة',  // عربي
-     
+      'favorites': 'المفضلة',
+      'savedManga': 'المانغا المحفوظة',
+
+      // ── صفحة المفضلة ──
+      'back': 'رجوع',
+      'all': 'الكل',
+      'reading': 'أقرأه',
+      'planRead': 'سأقرأه',
+      'paused': 'متوقف',
+      'completedCat': 'مكتمل',
+      'empty_list': 'قائمتك فارغة',
+      'empty_list_sub': 'ما أضفت أي مانغا للمفضلة بعد',
+      'cat_reading': 'أقرأه حالياً',
+      'cat_planread': 'سأقرأه',
+      'cat_paused': 'متوقف مؤقتاً',
+      'cat_completed': 'مكتمل',
+      'cat_remove': 'إزالة التصنيف',
+      'cat_menu_title': 'تصنيف المانغا',
+      'select_count': 'محدد',
+      'cancel': 'إلغاء',
+      'delete_selected': 'حذف المحدد',
+      'add_category': '+ تصنيف',
 
       // ── Detail Page ──
       'startReading': 'ابدأ القراءة',
@@ -123,9 +143,9 @@ class AppProvider extends ChangeNotifier {
       'manga_library': 'Manga Library',
       'see_all': 'See All',
       'error_loading': 'Error loading data',
-      'home': 'home',
-      'search': 'search',
-      'more': 'more',
+      'home': 'Home',
+      'search': 'Search',
+      'more': 'More',
 
       // ── More Page ──
       'more_title': 'More',
@@ -140,7 +160,29 @@ class AppProvider extends ChangeNotifier {
       'about': 'About',
       'version': 'Version 1.0.0',
       'contact_us': 'Contact Us',
-       'favorites': 'Favorites', // إنجليزي
+      'favorites': 'Favorites',
+      'savedManga': 'Saved Manga',
+
+      // ── Favorites Page ──
+      'back': 'Back',
+      'all': 'All',
+      'reading': 'Reading',
+      'planRead': 'Plan to Read',
+      'paused': 'On Hold',
+      'completedCat': 'Completed',
+      'empty_list': 'Your list is empty',
+      'empty_list_sub': 'You haven\'t added any manga yet',
+      'cat_reading': 'Currently Reading',
+      'cat_planread': 'Plan to Read',
+      'cat_paused': 'On Hold',
+      'cat_completed': 'Completed',
+      'cat_remove': 'Remove Category',
+      'cat_menu_title': 'Manga Category',
+      'select_count': 'selected',
+      'cancel': 'Cancel',
+      'delete_selected': 'Delete Selected',
+      'add_category': '+ Category',
+
       // ── Detail Page ──
       'startReading': 'Start Reading',
       'chapters': 'Chapters',
