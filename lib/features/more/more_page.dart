@@ -13,7 +13,6 @@ class MorePage extends StatefulWidget {
 
 class _MorePageState extends State<MorePage> {
   static const _accentNeon = Color(0xFFBF5FFF);
-  static const _gold       = Color(0xFFE8B85C);
   static const _accent     = Color(0xFF9B5CF6);
 
   @override
@@ -27,7 +26,6 @@ class _MorePageState extends State<MorePage> {
     final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
     final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
 
-    // عداد المفضلة — يُحسب مباشرة من الـ service
     final favCount = FavoritesService.favorites.length;
 
     return Directionality(
@@ -40,8 +38,6 @@ class _MorePageState extends State<MorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                // ── هيدر — مطابق HTML ──
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
                   child: Text(t('more_title') ?? 'المزيد',
@@ -52,18 +48,13 @@ class _MorePageState extends State<MorePage> {
                       color: textPrimary,
                     )),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
-                      // ── كارد الحساب — مطابق HTML ──
                       _buildAccountCard(t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 10),
-
-                      // ── كارد المفضلة — يظهر دائماً (انت طلبت كذا) ──
                       GestureDetector(
                         onTap: () {
                           HapticFeedback.selectionClick();
@@ -81,7 +72,6 @@ class _MorePageState extends State<MorePage> {
                           ),
                           child: Row(
                             children: [
-                              // أيقونة القلب — مطابق HTML
                               Container(
                                 width: 42, height: 42,
                                 decoration: BoxDecoration(
@@ -106,7 +96,6 @@ class _MorePageState extends State<MorePage> {
                                   ],
                                 ),
                               ),
-                              // badge العدد — مطابق #more-fav-badge
                               if (favCount > 0) ...[
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -122,28 +111,19 @@ class _MorePageState extends State<MorePage> {
                                 ),
                                 const SizedBox(width: 8),
                               ],
-                              // سهم — مطابق HTML
                               const Icon(Icons.chevron_left_rounded, color: Color(0xFF7A728E), size: 16),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 10),
-
-                      // ── تسمية إعدادات التطبيق ──
                       Text(t('app_settings') ?? 'إعدادات التطبيق',
                         style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textSub)),
                       const SizedBox(height: 8),
-
-                      // ── إعدادات اللغة + الثيم — مطابق HTML ──
                       _buildSettingsCard(provider, t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 16),
-
-                      // ── عن التطبيق — مطابق HTML ──
                       _buildAboutCard(t, cardClr, textPrimary, textSub),
                       const SizedBox(height: 10),
-
-                      // ── تواصل معنا — مطابق HTML ──
                       _buildContactCard(t, cardClr, textSub),
                       const SizedBox(height: 20),
                     ],
@@ -157,7 +137,6 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  // ── بطاقة الحساب — مطابق HTML ──
   Widget _buildAccountCard(String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return GestureDetector(
       onTap: () => HapticFeedback.selectionClick(),
@@ -171,7 +150,6 @@ class _MorePageState extends State<MorePage> {
         ),
         child: Row(
           children: [
-            // أفاتار — مطابق HTML
             Container(
               width: 50, height: 50,
               decoration: BoxDecoration(
@@ -207,7 +185,6 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  // ── إعدادات اللغة + الثيم — مطابق HTML ──
   Widget _buildSettingsCard(AppProvider provider, String Function(String) t,
       Color cardClr, Color textPrimary, Color textSub) {
     return Container(
@@ -218,7 +195,6 @@ class _MorePageState extends State<MorePage> {
       ),
       child: Column(
         children: [
-          // اللغة
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
@@ -250,7 +226,6 @@ class _MorePageState extends State<MorePage> {
                       ],
                     ),
                   ),
-                  // زر تبديل اللغة — مطابق HTML
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
@@ -265,11 +240,7 @@ class _MorePageState extends State<MorePage> {
               ),
             ),
           ),
-
-          // فاصل
           Container(height: 1, color: _accent.withOpacity(0.1), margin: const EdgeInsets.symmetric(horizontal: 16)),
-
-          // الثيم
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () { HapticFeedback.selectionClick(); provider.toggleTheme(); },
@@ -303,7 +274,6 @@ class _MorePageState extends State<MorePage> {
                       ],
                     ),
                   ),
-                  // تبديل الثيم — مطابق HTML
                   _ThemeToggle(isLight: provider.isLightTheme),
                 ],
               ),
@@ -314,10 +284,9 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  // ── عن التطبيق — مطابق HTML ──
   Widget _buildAboutCard(String Function(String) t, Color cardClr, Color textPrimary, Color textSub) {
     return GestureDetector(
-      onTap: () { HapticFeedback.selectionClick(); _showAboutSheet(t); },
+      onTap: () { HapticFeedback.selectionClick(); _showAboutDialog(context, provider: context.read<AppProvider>()); },
       child: Container(
         decoration: BoxDecoration(
           color: cardClr,
@@ -330,10 +299,10 @@ class _MorePageState extends State<MorePage> {
             Container(
               width: 40, height: 40,
               decoration: BoxDecoration(
-                color: _gold.withOpacity(0.15),
+                color: const Color(0xFFE8B85C).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Center(child: Icon(Icons.info_outline_rounded, color: _gold, size: 18)),
+              child: const Center(child: Icon(Icons.info_outline_rounded, color: Color(0xFFE8B85C), size: 18)),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -355,7 +324,6 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  // ── تواصل معنا — مطابق HTML ──
   Widget _buildContactCard(String Function(String) t, Color cardClr, Color textSub) {
     return Container(
       decoration: BoxDecoration(
@@ -401,304 +369,181 @@ class _MorePageState extends State<MorePage> {
     );
   }
 
-  // ── صفحة عن التطبيق ──
-  void _showAboutSheet(String Function(String) t) {
+  void _showAboutDialog(BuildContext context, {required AppProvider provider}) {
     HapticFeedback.selectionClick();
-    Navigator.push(context, MaterialPageRoute(builder: (_) => _AboutPage(t: t)));
-  }
-
-}
-
-// ══════════════════════════════════════════
-// ── صفحة عن التطبيق — تصميم جديد كامل ──
-// ══════════════════════════════════════════
-class _AboutPage extends StatelessWidget {
-  final String Function(String) t;
-  const _AboutPage({required this.t});
-
-  static const _accentNeon = Color(0xFFBF5FFF);
-  static const _accent     = Color(0xFF9B5CF6);
-  static const _gold       = Color(0xFFE8B85C);
-
-  @override
-  Widget build(BuildContext context) {
-    final provider    = context.watch<AppProvider>();
-    final dir         = provider.dir;
-    final dark        = Theme.of(context).brightness == Brightness.dark;
-    final bg          = dark ? const Color(0xFF0A0714) : const Color(0xFFEDEEF4);
-    final cardClr     = dark ? const Color(0xFF130F1E) : Colors.white;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = dark ? const Color(0xFF130F1E) : Colors.white;
     final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
-    final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
+    final textSub = dark ? const Color(0xFFA09AB0) : const Color(0xFF555555);
+    
+    // إطار واضح جداً: أزرق نيلي بارز بالوضع النهاري، وبنفسجي بالليلي
+    final dialogBorderColor = dark ? const Color(0xFF9B5CF6).withOpacity(0.4) : const Color(0xFF3B82F6).withOpacity(0.7);
+    
+    // اسماء المطورين: بنفسجي بالوضع الليلي، وأزرق نيلي بالوضع النهاري
+    final devColor = dark ? const Color(0xFFBF5FFF) : const Color(0xFF3B82F6);
 
-    return Directionality(
-      textDirection: dir,
-      child: Scaffold(
-        backgroundColor: bg,
-        body: SafeArea(
+    final isAr = provider.isArabic;
+    final align = isAr ? TextAlign.right : TextAlign.left;
+    final textDir = isAr ? TextDirection.rtl : TextDirection.ltr;
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.7),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: dialogBorderColor, width: 2),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20)],
+          ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── هيدر ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: dark ? const Color(0x2EBF5FFF) : const Color(0xFFEEF0FA),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: dark ? const Color(0x8CBF5FFF) : const Color(0xFF5B5BD6),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(t('back'),
-                              style: TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w700,
-                                color: dark ? const Color(0xFFE2DEF0) : const Color(0xFF5B5BD6),
-                              )),
-                            const SizedBox(width: 4),
-                            Text('›', style: TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.w700,
-                              color: dark ? const Color(0xFFE2DEF0) : const Color(0xFF5B5BD6),
-                            )),
-                          ],
-                        ),
-                      ),
+              // الهيدر
+              Row(
+                textDirection: textDir,
+                children: [
+                  Container(
+                    width: 32, height: 32,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8B85C).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const Spacer(),
-                    Row(
+                    child: const Center(
+                      child: Icon(Icons.info_outline_rounded, color: Color(0xFFE8B85C), size: 18),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: isAr ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 28, height: 28,
-                          decoration: BoxDecoration(
-                            color: _gold.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(child: Icon(Icons.info_outline_rounded, color: _gold, size: 15)),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(t('about'),
-                          style: TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w900, color: textPrimary,
-                          )),
+                        Text(isAr ? 'عن التطبيق' : 'About',
+                          textAlign: align,
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: textPrimary)),
+                        const SizedBox(height: 1),
+                        Text(isAr ? 'الإصدار 1.0.0' : 'Version 1.0.0',
+                          textAlign: align,
+                          style: TextStyle(fontSize: 11, color: textSub)),
                       ],
                     ),
-                    const Spacer(),
-                    const SizedBox(width: 80),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 28, height: 28,
+                      decoration: BoxDecoration(
+                        color: textSub.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.close_rounded, color: textPrimary, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // الوصف
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: textSub.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  isAr 
+                    ? 'تطبيق Manga Nova متكامل لقراءة المانجا، يوفر تجربة سلسة وسريعة مع واجهة عصرية مصممة خصيصاً لعشاق القصص المصورة.'
+                    : 'Manga Nova is a comprehensive manga reading app, offering a smooth and fast experience with a modern interface designed specifically for comic fans.',
+                  textAlign: align,
+                  textDirection: textDir,
+                  style: TextStyle(fontSize: 12, color: textSub, height: 1.35),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // مميزات التطبيق (تم تثبيت اتجاه النص والعلامات بدقة لتكون الإيموجي قبل الجملة بالعربي)
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: textSub.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Directionality(
+                      textDirection: textDir,
+                      child: Text(isAr ? '✨ مميزات التطبيق' : '✨ App Features',
+                        textAlign: align,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textPrimary)),
+                    ),
+                    const SizedBox(height: 6),
+                    _featureItem('🌓', isAr ? 'دعم الوضع الداكن والنهاري' : 'Dark and light mode support', align, textSub, textDir),
+                    _featureItem('📚', isAr ? 'مكتبة شخصية بتصنيفات متعددة' : 'Personal library with multi-categories', align, textSub, textDir),
+                    _featureItem('🔖', isAr ? 'حفظ تقدم القراءة والمفضلة' : 'Save reading progress and favorites', align, textSub, textDir),
+                    _featureItem('📖', isAr ? 'قارئ بوضعين عمودي وأفقي' : 'Vertical and horizontal reader modes', align, textSub, textDir),
+                    _featureItem('⭐', isAr ? 'نظام تقييم ومتابعة الإصدارات' : 'Rating and release tracking system', align, textSub, textDir),
                   ],
                 ),
               ),
+              const SizedBox(height: 10),
 
-              // ── المحتوى ──
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
-                  child: Column(
+              // إخلاء المسؤولية (تم ضبط اتجاه النص بالكامل لمنع انعكاس النقطتين)
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE85A78).withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE85A78).withOpacity(0.15)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Directionality(
+                      textDirection: textDir,
+                      child: Text(isAr ? '⚠️ إخلاء المسؤولية:' : '⚠️ Disclaimer:',
+                        textAlign: align,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFE85A78))),
+                    ),
+                    const SizedBox(height: 3),
+                    Directionality(
+                      textDirection: textDir,
+                      child: Text(
+                        isAr 
+                          ? 'جميع المحتويات والترجمات والمواد المعروضة في هذا التطبيق هي ملك حصري لأصحابها وصانعيها الأصليين. التطبيق لا يدعي ملكية أي من هذه المحتويات وهو مخصص للاستخدام الشخصي فقط. جميع الحقوق محفوظة لأصحابها.'
+                          : 'All contents, translations, and materials displayed in this app are the exclusive property of their original owners and creators. The app does not claim ownership of any of these contents and is intended for personal use only. All rights reserved to their respective owners.',
+                        textAlign: align,
+                        style: TextStyle(fontSize: 10.5, color: textSub, height: 1.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // التطوير (تم تثبيت اتجاه السطر والعلامات والأسماء تماماً حسب الطلب)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3B82F6).withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Directionality(
+                  textDirection: textDir,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
-                      // ── لوغو + اسم التطبيق ──
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 28),
-                        decoration: BoxDecoration(
-                          color: cardClr,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: _accentNeon.withOpacity(0.2)),
-                          boxShadow: [
-                            BoxShadow(color: _accentNeon.withOpacity(dark ? 0.12 : 0.05), blurRadius: 20),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            // أيقونة التطبيق
-                            Container(
-                              width: 72, height: 72,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [Color(0xFF4A1F80), Color(0xFF0A0714)],
-                                ),
-                                border: Border.all(color: _accentNeon.withOpacity(0.4), width: 2),
-                                boxShadow: [
-                                  BoxShadow(color: _accentNeon.withOpacity(0.3), blurRadius: 20),
-                                ],
-                              ),
-                              child: const Center(
-                                child: Text('M', style: TextStyle(
-                                  fontSize: 34, fontWeight: FontWeight.w900,
-                                  color: Colors.white, fontFamily: 'Archivo Black',
-                                )),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            const Text('Manga Nova',
-                              style: TextStyle(
-                                fontSize: 22, fontWeight: FontWeight.w900,
-                                color: Color(0xFFBF5FFF), fontFamily: 'Archivo Black',
-                              )),
-                            const SizedBox(height: 4),
-                            Text(t('version'),
-                              style: TextStyle(fontSize: 13, color: textSub)),
-                            const SizedBox(height: 12),
-                            // شريط فاصل
-                            Container(height: 1, color: _accentNeon.withOpacity(0.1),
-                              margin: const EdgeInsets.symmetric(horizontal: 24)),
-                            const SizedBox(height: 12),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Text(t('about_desc'),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 13, color: textSub, height: 1.7)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // ── ميزات التطبيق ──
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: cardClr,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: _accentNeon.withOpacity(0.15)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 32, height: 32,
-                                  decoration: BoxDecoration(
-                                    color: _accent.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Center(child: Text('✨', style: TextStyle(fontSize: 15))),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(t('features_title').replaceAll('✨ ', ''),
-                                  style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w800, color: textPrimary,
-                                  )),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            ...[
-                              ('🌓', t('feature_1').replaceAll('🌓 ', '')),
-                              ('📚', t('feature_2').replaceAll('📚 ', '')),
-                              ('🔖', t('feature_3').replaceAll('🔖 ', '')),
-                              ('↕️', t('feature_4').replaceAll('↕️ ', '')),
-                              ('⭐', t('feature_5').replaceAll('⭐ ', '')),
-                            ].map((f) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 34, height: 34,
-                                    decoration: BoxDecoration(
-                                      color: _accent.withOpacity(0.08),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(child: Text(f.$1, style: const TextStyle(fontSize: 16))),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(f.$2,
-                                      style: TextStyle(fontSize: 13, color: textSub, height: 1.4)),
-                                  ),
-                                ],
-                              ),
-                            )),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // ── إخلاء المسؤولية ──
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF4081).withOpacity(0.07),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFFF4081).withOpacity(0.25)),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 34, height: 34,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFF4081).withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Center(child: Text('⚠️', style: TextStyle(fontSize: 16))),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                t('disclaimer').replaceAll('⚠️ إخلاء المسؤولية: ', '').replaceAll('⚠️ Disclaimer: ', ''),
-                                style: TextStyle(fontSize: 12, color: textSub, height: 1.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // ── المطورون ──
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: cardClr,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: _accentNeon.withOpacity(0.15)),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 32, height: 32,
-                                  decoration: BoxDecoration(
-                                    color: _accent.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Center(child: Text('💻', style: TextStyle(fontSize: 15))),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(t('dev_title').replaceAll('💻 ', ''),
-                                  style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w800, color: textPrimary,
-                                  )),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            // المطور 1
-                            _DevCard(name: 'أكرم فائق', nameEn: 'Akram Faeq', role: 'Flutter Developer', dark: dark),
-                            const SizedBox(height: 10),
-                            // المطور 2
-                            _DevCard(name: 'يوسف سفيان', nameEn: 'Yousef Sofian', role: 'UI / UX Designer', dark: dark),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // ── نسخة / حقوق ──
-                      Text('© 2025 Manga Nova. All rights reserved.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 11, color: textSub.withOpacity(0.6))),
+                      Text(isAr ? '💻 التطوير: ' : '💻 Development: ',
+                        textAlign: align,
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textSub)),
+                      Text('Akram Faeq & Yousef Sofian',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: devColor)),
                     ],
                   ),
                 ),
@@ -709,61 +554,28 @@ class _AboutPage extends StatelessWidget {
       ),
     );
   }
-}
 
-// ── كارد المطور ──
-class _DevCard extends StatelessWidget {
-  final String name, nameEn, role;
-  final bool dark;
-  const _DevCard({required this.name, required this.nameEn, required this.role, required this.dark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: dark ? const Color(0xFF1A1035) : const Color(0xFFF5F5FA),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFBF5FFF).withOpacity(0.15)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42, height: 42,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
-                colors: [Color(0xFF4A1F80), Color(0xFF1A1030)],
-              ),
-              border: Border.all(color: const Color(0xFFBF5FFF).withOpacity(0.4), width: 1.5),
+  Widget _featureItem(String emoji, String text, TextAlign align, Color color, TextDirection textDir) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 3.5),
+      child: Directionality(
+        textDirection: textDir,
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(text,
+                textAlign: align,
+                style: TextStyle(fontSize: 11, color: color)),
             ),
-            child: Center(
-              child: Text(name[0],
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(nameEn,
-                style: TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w700,
-                  color: dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111),
-                )),
-              const SizedBox(height: 2),
-              Text(role,
-                style: const TextStyle(fontSize: 11, color: Color(0xFF9B5CF6))),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-// ── تبديل الثيم — مطابق HTML ──
 class _ThemeToggle extends StatelessWidget {
   final bool isLight;
   const _ThemeToggle({required this.isLight});
@@ -797,7 +609,6 @@ class _ThemeToggle extends StatelessWidget {
   }
 }
 
-// ── زر التواصل الاجتماعي — مطابق HTML ──
 class _SocialBtn extends StatelessWidget {
   final Color? color;
   final Gradient? gradient;
