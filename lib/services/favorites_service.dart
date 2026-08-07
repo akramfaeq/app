@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/manga_model.dart';
 
@@ -34,15 +35,20 @@ class FavoriteItem {
   );
 }
 
-class FavoritesService {
-  static List<FavoriteItem> _favs = [];
-  static bool _loaded = false;
+class FavoritesService extends ChangeNotifier {
+  // ── Singleton ──
+  static final FavoritesService instance = FavoritesService._();
+  FavoritesService._();
 
-  static List<FavoriteItem> get favorites => List.unmodifiable(_favs);
+  List<FavoriteItem> _favs = [];
+  bool _loaded = false;
 
-  static bool isFavorite(String id) => _favs.any((f) => f.id == id);
+  List<FavoriteItem> get favorites => List.unmodifiable(_favs);
+  int get count => _favs.length;
 
-  static Future<void> load() async {
+  bool isFavorite(String id) => _favs.any((f) => f.id == id);
+
+  Future<void> load() async {
     if (_loaded) return;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('favorites_v2');
@@ -51,14 +57,16 @@ class FavoritesService {
       _favs = list.map((e) => FavoriteItem.fromJson(e)).toList();
     }
     _loaded = true;
+    notifyListeners();
   }
 
-  static Future<void> _save() async {
+  Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('favorites_v2', jsonEncode(_favs.map((f) => f.toJson()).toList()));
+    await prefs.setString('favorites_v2',
+        jsonEncode(_favs.map((f) => f.toJson()).toList()));
   }
 
-  static Future<void> toggle(MangaModel manga) async {
+  Future<void> toggle(MangaModel manga) async {
     await load();
     if (isFavorite(manga.id)) {
       _favs.removeWhere((f) => f.id == manga.id);
@@ -69,18 +77,21 @@ class FavoritesService {
       ));
     }
     await _save();
+    notifyListeners();
   }
 
-  static Future<void> remove(String id) async {
+  Future<void> remove(String id) async {
     _favs.removeWhere((f) => f.id == id);
     await _save();
+    notifyListeners();
   }
 
-  static Future<void> setCategory(String id, String? category) async {
+  Future<void> setCategory(String id, String? category) async {
     final idx = _favs.indexWhere((f) => f.id == id);
     if (idx != -1) {
       _favs[idx].category = category;
       await _save();
+      notifyListeners();
     }
   }
 }

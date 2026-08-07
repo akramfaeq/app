@@ -26,7 +26,7 @@ class _MorePageState extends State<MorePage> {
     final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
     final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
 
-    final favCount = FavoritesService.favorites.length;
+    final favCount = context.watch<FavoritesService>().count;
 
     return Directionality(
       textDirection: dir,

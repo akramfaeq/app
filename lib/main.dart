@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_provider.dart';
+import 'services/favorites_service.dart';
 import 'shared/widgets/main_scaffold.dart';
 
 void main() async {
@@ -14,6 +15,9 @@ void main() async {
     publishableKey: 'sb_publishable_FHldfud15Bs-CSzFIoc-Jw_vEtz2Hmb',
   );
 
+  // تحميل المفضلة مسبقاً
+  await FavoritesService.instance.load();
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -21,8 +25,11 @@ void main() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider.value(value: FavoritesService.instance),
+      ],
       child: const MangaNovaApp(),
     ),
   );

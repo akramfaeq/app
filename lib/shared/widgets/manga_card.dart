@@ -110,7 +110,7 @@ class _MangaCardSkeletonState extends State<MangaCardSkeleton>
   }
 }
 
-// ── كارد الغلاف مع زر القلب الحقيقي ──
+// ── كارد الغلاف مع زر القلب ──
 class _CoverImage extends StatefulWidget {
   final MangaModel manga;
   final bool isDark;
@@ -121,39 +121,38 @@ class _CoverImage extends StatefulWidget {
 }
 
 class _CoverImageState extends State<_CoverImage> {
-  bool _isFav = false;
+  final _svc = FavoritesService.instance;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _svc.load();
+    _svc.addListener(_rebuild);
   }
 
-  Future<void> _load() async {
-    await FavoritesService.load();
-    if (mounted) setState(() => _isFav = FavoritesService.isFavorite(widget.manga.id));
+  @override
+  void dispose() {
+    _svc.removeListener(_rebuild);
+    super.dispose();
   }
+
+  void _rebuild() { if (mounted) setState(() {}); }
 
   Future<void> _toggle() async {
     HapticFeedback.selectionClick();
-    await FavoritesService.toggle(widget.manga);
-    if (mounted) setState(() => _isFav = FavoritesService.isFavorite(widget.manga.id));
+    await _svc.toggle(widget.manga);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark      = widget.isDark;
-    final manga       = widget.manga;
-    final cardBg      = isDark ? const Color(0xFF161129) : const Color(0xFFF5F5FA);
-    final border      = isDark ? const Color(0x40BF5FFF) : const Color(0x403F5EFB);
-    final neonGlow    = isDark ? const Color(0x40BF5FFF) : const Color(0x153F5EFB);
-    final heartBorder = _isFav
-        ? const Color(0xFFE85A78)
-        : (isDark ? const Color(0x80BF5FFF) : const Color(0x803F5EFB));
-    final heartGlow   = _isFav
-        ? const Color(0x40E85A78)
-        : (isDark ? const Color(0x4DBF5FFF) : const Color(0x303F5EFB));
-    final hasImage    = manga.cover.isNotEmpty;
+    // يقرأ الحالة مباشرة كل مرة من الـ service
+    final bool _isFav = _svc.isFavorite(widget.manga.id);
+    final isDark   = widget.isDark;
+    final manga    = widget.manga;
+    final cardBg   = isDark ? const Color(0xFF161129) : const Color(0xFFF5F5FA);
+    final border   = isDark ? const Color(0x40BF5FFF) : const Color(0x403F5EFB);
+    final neonGlow = isDark ? const Color(0x40BF5FFF) : const Color(0x153F5EFB);
+    final hasImage = manga.cover.isNotEmpty;
 
     return Container(
       width: kCardW, height: kCardH,
@@ -171,7 +170,6 @@ class _CoverImageState extends State<_CoverImage> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // الصورة
             hasImage
                 ? CachedNetworkImage(
                     imageUrl: manga.cover, fit: BoxFit.cover,
@@ -184,7 +182,6 @@ class _CoverImageState extends State<_CoverImage> {
                   )
                 : Container(color: cardBg),
 
-            // تدرج سفلي
             if (hasImage)
               Positioned.fill(
                 child: DecoratedBox(
@@ -217,7 +214,7 @@ class _CoverImageState extends State<_CoverImage> {
               ),
             ),
 
-            // ── زر القلب - نفس الـ HTML ──
+            // زر القلب
             Positioned(
               top: 6, right: 6,
               child: GestureDetector(
@@ -226,11 +223,9 @@ class _CoverImageState extends State<_CoverImage> {
                   duration: const Duration(milliseconds: 200),
                   width: 26, height: 26,
                   decoration: BoxDecoration(
-                    // نفس HTML: rgba(0,0,0,0.6) دائماً
                     color: Colors.black.withOpacity(0.6),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      // نفس HTML: بنفسجي لما مش مفضل، وردي لما مفضل
                       color: _isFav
                           ? const Color(0xFFE63946).withOpacity(0.7)
                           : const Color(0xFFC084FC).withOpacity(0.3),
@@ -243,7 +238,6 @@ class _CoverImageState extends State<_CoverImage> {
                   child: Center(
                     child: Icon(
                       _isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                      // أحمر لما مفضل، أبيض لما مش مفضل - نفس الـ HTML
                       color: _isFav ? const Color(0xFFE63946) : Colors.white,
                       size: 13,
                     ),

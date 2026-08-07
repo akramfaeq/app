@@ -7,6 +7,7 @@ import '../../core/theme/app_provider.dart';
 import '../../models/manga_model.dart';
 import '../../models/chapter_model.dart';
 import '../../services/manga_service.dart';
+import '../../services/favorites_service.dart';
 import 'package:manga_nova/features/reader/reader_page.dart';
 
 class DetailPage extends StatefulWidget {
@@ -19,6 +20,7 @@ class DetailPage extends StatefulWidget {
 
 class _DetailPageState extends State<DetailPage> {
   final _service = MangaService();
+  final _svc = FavoritesService.instance;
   List<ChapterModel> _chapters = [];
   bool _loadingChapters = true;
   bool _sortDescending = true;
@@ -31,13 +33,30 @@ class _DetailPageState extends State<DetailPage> {
   void initState() {
     super.initState();
     _loadChapters();
+    _loadFavStatus();
+    _svc.addListener(_onFavChanged);
     _searchCtrl.addListener(() {
       setState(() => _searchQuery = _searchCtrl.text.trim());
     });
   }
 
+  void _onFavChanged() {
+    if (mounted) setState(() => _isFav = _svc.isFavorite(widget.manga.id));
+  }
+
+  Future<void> _loadFavStatus() async {
+    await _svc.load();
+    if (mounted) setState(() => _isFav = _svc.isFavorite(widget.manga.id));
+  }
+
+  Future<void> _toggleFav() async {
+    HapticFeedback.selectionClick();
+    await _svc.toggle(widget.manga);
+  }
+
   @override
   void dispose() {
+    _svc.removeListener(_onFavChanged);
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -121,7 +140,7 @@ class _DetailPageState extends State<DetailPage> {
                 manga: widget.manga, dark: dark, accent: accent,
                 isFav: _isFav,
                 isArabic: isAr,
-                onFavTap: () => setState(() => _isFav = !_isFav),
+                onFavTap: _toggleFav,
                 onBack: () => Navigator.pop(context),
               ),
             ),
@@ -206,7 +225,7 @@ class _DetailPageState extends State<DetailPage> {
                           ),
                           const SizedBox(width: 10),
                           GestureDetector(
-                            onTap: () { HapticFeedback.lightImpact(); setState(() => _isFav = !_isFav); },
+                            onTap: () { HapticFeedback.lightImpact(); _toggleFav(); },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               width: 50, height: 50,

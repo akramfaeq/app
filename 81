@@ -1,0 +1,92 @@
+Wasm dry run succeeded. Consider building and testing your application with the `--wasm` flag. See docs for more info: https://docs.flutter.dev/platform-integration/web/wasm
+Use --no-wasm-dry-run to disable these warnings.
+Target dart2js failed: ProcessException: Process exited abnormally with exit code 1:
+lib/shared/widgets/manga_card.dart:133:28:
+Error: Member not found: 'FavoritesService.load'.
+    await FavoritesService.load();
+                           ^^^^
+lib/shared/widgets/manga_card.dart:134:59:
+Error: Member not found: 'FavoritesService.isFavorite'.
+    if (mounted) setState(() => _isFav = FavoritesService.isFavorite(widget.manga.id));
+                                                          ^^^^^^^^^^
+lib/shared/widgets/manga_card.dart:139:28:
+Error: Member not found: 'FavoritesService.toggle'.
+    await FavoritesService.toggle(widget.manga);
+                           ^^^^^^
+lib/shared/widgets/manga_card.dart:140:59:
+Error: Member not found: 'FavoritesService.isFavorite'.
+    if (mounted) setState(() => _isFav = FavoritesService.isFavorite(widget.manga.id));
+                                                          ^^^^^^^^^^
+lib/features/favorites/favorites_page.dart:43:34:
+Error: Member not found: 'favorites'.
+    final all = FavoritesService.favorites;
+                                 ^^^^^^^^^
+lib/features/favorites/favorites_page.dart:59:53:
+Error: Member not found: 'FavoritesService.remove'.
+    for (final id in _selectedIds) FavoritesService.remove(id);
+                                                    ^^^^^^
+lib/features/favorites/favorites_page.dart:335:46:
+Error: Member not found: 'FavoritesService.setCategory'.
+                onTap: () { FavoritesService.setCategory(item.id, 'reading'); setState(() {}); Navigator.pop(context); }),
+                                             ^^^^^^^^^^^
+lib/features/favorites/favorites_page.dart:338:46:
+Error: Member not found: 'FavoritesService.setCategory'.
+                onTap: () { FavoritesService.setCategory(item.id, 'planread'); setState(() {}); Navigator.pop(context); }),
+                                             ^^^^^^^^^^^
+lib/features/favorites/favorites_page.dart:341:46:
+Error: Member not found: 'FavoritesService.setCategory'.
+                onTap: () { FavoritesService.setCategory(item.id, 'paused'); setState(() {}); Navigator.pop(context); }),
+                                             ^^^^^^^^^^^
+lib/features/favorites/favorites_page.dart:344:46:
+Error: Member not found: 'FavoritesService.setCategory'.
+                onTap: () { FavoritesService.setCategory(item.id, 'completed'); setState(() {}); Navigator.pop(context); }),
+                                             ^^^^^^^^^^^
+lib/features/favorites/favorites_page.dart:346:44:
+Error: Member not found: 'FavoritesService.setCategory'.
+              onTap: () { FavoritesService.setCategory(item.id, null); setState(() {}); Navigator.pop(context); },
+                                           ^^^^^^^^^^^
+Error: Compilation failed.
+  Command: /home/codespace/flutter/bin/cache/dart-sdk/bin/dart compile js --platform-binaries=/home/codespace/flutter/bin/cache/flutter_web_sdk/kernel --invoker=flutter_tool -Ddart.vm.product=true -DFLUTTER_VERSION=3.44.8 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=058e0af2c2 -DFLUTTER_ENGINE_REVISION=0cd610717b -DFLUTTER_DART_VERSION=3.12.2 -DFLUTTER_WEB_USE_SKIA=true -DFLUTTER_WEB_USE_SKWASM=false -DFLUTTER_WEB_CANVASKIT_URL=https://www.gstatic.com/flutter-canvaskit/0cd610717bde95fd88343c64f81c11ba4e5c0010/ --native-null-assertions --no-source-maps -O4 --minify -o /workspaces/app/.dart_tool/flutter_build/1bffeab16adb21d17484e9d4e6ff243f/app.dill --packages=/workspaces/app/.dart_tool/package_config.json --cfe-only /workspaces/app/.dart_tool/flutter_build/1bffeab16adb21d17484e9d4e6ff243f/main.dart
+#0      RunResult.throwException (package:flutter_tools/src/base/process.dart:153:5)
+#1      _DefaultProcessUtils.run (package:flutter_tools/src/base/process.dart:379:19)
+<asynchronous suspension>
+#2      Dart2JSTarget.build (package:flutter_tools/src/build_system/targets/web.dart:208:5)
+<asynchronous suspension>
+#3      _BuildInstance._invokeInternal (package:flutter_tools/src/build_system/build_system.dart:937:9)
+<asynchronous suspension>
+#4      Future.wait.<anonymous closure> (dart:async/future.dart:546:21)
+<asynchronous suspension>
+#5      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:875:32)
+<asynchronous suspension>
+#6      Future.wait.<anonymous closure> (dart:async/future.dart:546:21)
+<asynchronous suspension>
+#7      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:875:32)
+<asynchronous suspension>
+#8      FlutterBuildSystem.build (package:flutter_tools/src/build_system/build_system.dart:684:16)
+<asynchronous suspension>
+#9      WebBuilder.buildWeb (package:flutter_tools/src/web/compile.dart:107:34)
+<asynchronous suspension>
+#10     BuildWebCommand.runCommand (package:flutter_tools/src/commands/build_web.dart:293:5)
+<asynchronous suspension>
+#11     FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1630:27)
+<asynchronous suspension>
+#12     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#13     CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+<asynchronous suspension>
+#14     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:496:9)
+<asynchronous suspension>
+#15     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#16     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:431:5)
+<asynchronous suspension>
+#17     FlutterCommandRunner.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:307:33)
+<asynchronous suspension>
+#18     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:104:11)
+<asynchronous suspension>
+#19     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#20     main (package:flutter_tools/executable.dart:103:3)
+<asynchronous suspension>
+
+Error: Failed to compile application for the Web.

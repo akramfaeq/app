@@ -40,7 +40,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   bool _selectMode = false;
 
   List<FavoriteItem> get _filtered {
-    final all = FavoritesService.favorites;
+    final all = FavoritesService.instance.favorites;
     if (_selectedCat == 'all') return all;
     return all.where((f) => f.category == _selectedCat).toList();
   }
@@ -56,12 +56,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
   void _cancelSelect() => setState(() { _selectedIds.clear(); _selectMode = false; });
 
   void _deleteSelected() {
-    for (final id in _selectedIds) FavoritesService.remove(id);
+    for (final id in _selectedIds) FavoritesService.instance.remove(id);
     setState(() { _selectedIds.clear(); _selectMode = false; });
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FavoritesService>(); //[cite: 5] يتحدث لما تتغير المفضلة
     final provider    = context.watch<AppProvider>();
     final t           = provider.t;
     final dir         = provider.dir;
@@ -69,8 +70,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
     final bg          = dark ? const Color(0xFF0A0714) : const Color(0xFFEDEEF4);
     final textPrimary = dark ? const Color(0xFFF0EEFF) : const Color(0xFF111111);
     final textSub     = dark ? const Color(0xFF7A728E) : const Color(0xFF6B7280);
-    // accent = بنفسجي نيون مطابق للـ HTML
-    final accent      = dark ? const Color(0xFFBF5FFF) : const Color(0xFF5B5BD6);
+    // تم تعديل اللون النهاري للأزرق النيلي 3B82F6
+    final accent      = dark ? const Color(0xFFBF5FFF) : const Color(0xFF3B82F6);
 
     final items = _filtered;
 
@@ -82,12 +83,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
           child: Column(
             children: [
 
-              // ── هيدر — مطابق HTML ──
+              // ── هيدر — مطابق HTML ──[cite: 5]
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Row(
                   children: [
-                    // زر رجوع — نفس .fav-back-btn
+                    // زر رجوع — نفس .fav-back-btn[cite: 5]
                     GestureDetector(
                       onTap: () { HapticFeedback.selectionClick(); Navigator.pop(context); },
                       child: Container(
@@ -96,7 +97,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                           color: dark ? const Color(0x2EBF5FFF) : const Color(0xFFEEF0FA),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: dark ? const Color(0x8CBF5FFF) : const Color(0xFF5B5BD6),
+                            color: dark ? const Color(0x8CBF5FFF) : const Color(0xFF3B82F6),
                             width: 1.5,
                           ),
                         ),
@@ -107,21 +108,21 @@ class _FavoritesPageState extends State<FavoritesPage> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: dark ? const Color(0xFFE2DEF0) : const Color(0xFF5B5BD6),
+                                color: dark ? const Color(0xFFE2DEF0) : const Color(0xFF3B82F6),
                               )),
                             const SizedBox(width: 4),
                             Text('›',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: dark ? const Color(0xFFE2DEF0) : const Color(0xFF5B5BD6),
+                                color: dark ? const Color(0xFFE2DEF0) : const Color(0xFF3B82F6),
                               )),
                           ],
                         ),
                       ),
                     ),
                     const Spacer(),
-                    // عنوان + أيقونة قلب — مطابق HTML
+                    // عنوان + أيقونة قلب — مطابق HTML[cite: 5]
                     Row(
                       children: [
                         Container(
@@ -150,7 +151,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 ),
               ),
 
-              // ── شريط التحديد — مطابق .fav-select-bar ──
+              // ── شريط التحديد — مطابق .fav-select-bar ──[cite: 5]
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 height: _selectMode ? 46 : 0,
@@ -159,12 +160,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   decoration: BoxDecoration(
                     color: dark
                         ? const Color(0x268B5CF6)
-                        : const Color(0x1A3F5EFB),
+                        : const Color(0x1A3B82F6),
                     border: Border(
                       bottom: BorderSide(
                         color: dark
                             ? const Color(0x4D8B5CF6)
-                            : const Color(0x333F5EFB),
+                            : const Color(0x333B82F6),
                       ),
                     ),
                   ),
@@ -174,7 +175,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: dark ? const Color(0xFFC9B6F5) : const Color(0xFF3F5EFB),
+                          color: dark ? const Color(0xFFC9B6F5) : const Color(0xFF3B82F6),
                         )),
                       const Spacer(),
                       GestureDetector(
@@ -182,17 +183,17 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
-                            color: dark ? const Color(0x148B5CF6) : const Color(0x1A3F5EFB),
+                            color: dark ? const Color(0x148B5CF6) : const Color(0x1A3B82F6),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: dark ? const Color(0x4D8B5CF6) : const Color(0x4D3F5EFB),
+                              color: dark ? const Color(0x4D8B5CF6) : const Color(0x4D3B82F6),
                             ),
                           ),
                           child: Text(t('cancel'),
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: dark ? const Color(0xFFC9B6F5) : const Color(0xFF3F5EFB),
+                              color: dark ? const Color(0xFFC9B6F5) : const Color(0xFF3B82F6),
                             )),
                         ),
                       ),
@@ -216,7 +217,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 ) : const SizedBox.shrink(),
               ),
 
-              // ── تبويبات التصنيف — مطابق .fav-cat-btn ──
+              // ── تبويبات التصنيف — مطابق .fav-cat-btn ──[cite: 5]
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
@@ -231,7 +232,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 ),
               ),
 
-              // ── المحتوى ──
+              // ── المحتوى ──[cite: 5]
               Expanded(
                 child: items.isEmpty
                     ? _buildEmpty(dark, textSub, t)
@@ -241,7 +242,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                           crossAxisCount: 3,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
-                          childAspectRatio: 0.52, // تقريبي لـ 148px cover + نص + نجوم + زر
+                          childAspectRatio: 0.52, // تقريبي لـ 148px cover + نص + نجوم + زر[cite: 5]
                         ),
                         itemCount: items.length,
                         itemBuilder: (ctx, i) {
@@ -278,7 +279,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     );
   }
 
-  // ── حالة فارغة — مطابق HTML ──
+  // ── حالة فارغة — مطابق HTML ──[cite: 5]
   Widget _buildEmpty(bool dark, Color textSub, String Function(String) t) {
     return Center(
       child: Column(
@@ -300,7 +301,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     );
   }
 
-  // ── قائمة التصنيف — مطابق #fav-cat-menu ──
+  // ── قائمة التصنيف — مطابق #fav-cat-menu ──[cite: 5]
   void _showCatMenu(FavoriteItem item, bool dark, Color accent, Color textPrimary, String Function(String) t) {
     HapticFeedback.selectionClick();
     final bgColor = dark ? const Color(0xFF130F1E) : const Color(0xFFF5F5FA);
@@ -313,7 +314,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border.all(color: const Color(0x40BF5FFF)),
+          border: Border.all(color: dark ? const Color(0x40BF5FFF) : const Color(0x403B82F6)),
         ),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
         child: Column(
@@ -332,18 +333,18 @@ class _FavoritesPageState extends State<FavoritesPage> {
             const SizedBox(height: 14),
             _menuItem(dark: dark, icon: Icons.menu_book_outlined, color: const Color(0xFF9B5CF6),
                 label: t('cat_reading'), cat: 'reading', current: item.category,
-                onTap: () { FavoritesService.setCategory(item.id, 'reading'); setState(() {}); Navigator.pop(context); }),
+                onTap: () { FavoritesService.instance.setCategory(item.id, 'reading'); setState(() {}); Navigator.pop(context); }),
             _menuItem(dark: dark, icon: Icons.bookmark_border_rounded, color: const Color(0xFF3B82F6),
                 label: t('cat_planread'), cat: 'planread', current: item.category,
-                onTap: () { FavoritesService.setCategory(item.id, 'planread'); setState(() {}); Navigator.pop(context); }),
+                onTap: () { FavoritesService.instance.setCategory(item.id, 'planread'); setState(() {}); Navigator.pop(context); }),
             _menuItem(dark: dark, icon: Icons.pause_circle_outline_rounded, color: const Color(0xFFF59E0B),
                 label: t('cat_paused'), cat: 'paused', current: item.category,
-                onTap: () { FavoritesService.setCategory(item.id, 'paused'); setState(() {}); Navigator.pop(context); }),
+                onTap: () { FavoritesService.instance.setCategory(item.id, 'paused'); setState(() {}); Navigator.pop(context); }),
             _menuItem(dark: dark, icon: Icons.check_circle_outline_rounded, color: const Color(0xFF10B981),
                 label: t('cat_completed'), cat: 'completed', current: item.category,
-                onTap: () { FavoritesService.setCategory(item.id, 'completed'); setState(() {}); Navigator.pop(context); }),
+                onTap: () { FavoritesService.instance.setCategory(item.id, 'completed'); setState(() {}); Navigator.pop(context); }),
             GestureDetector(
-              onTap: () { FavoritesService.setCategory(item.id, null); setState(() {}); Navigator.pop(context); },
+              onTap: () { FavoritesService.instance.setCategory(item.id, null); setState(() {}); Navigator.pop(context); },
               child: Container(
                 margin: const EdgeInsets.only(top: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
@@ -410,7 +411,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 }
 
-// ── تبويب التصنيف — مطابق .fav-cat-btn ──
+// ── تبويب التصنيف — مطابق .fav-cat-btn ──[cite: 5]
 class _CatTab extends StatelessWidget {
   final String label, cat, selected;
   final bool dark;
@@ -432,12 +433,12 @@ class _CatTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
           decoration: BoxDecoration(
             color: isActive
-                ? (dark ? const Color(0x2EBF5FFF) : const Color(0xFF5B5BD6).withOpacity(0.12))
+                ? (dark ? const Color(0x2EBF5FFF) : const Color(0xFF3B82F6).withOpacity(0.12))
                 : (dark ? const Color(0x0AFFFFFF) : const Color(0xFFF5F5FA)),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isActive
-                  ? (dark ? const Color(0x8CBF5FFF) : const Color(0xFF5B5BD6))
+                  ? (dark ? const Color(0x8CBF5FFF) : const Color(0xFF3B82F6))
                   : (dark ? const Color(0x33BF5FFF) : const Color(0xFFD1D5DB)),
               width: 1.5,
             ),
@@ -447,7 +448,7 @@ class _CatTab extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: isActive
-                  ? (dark ? const Color(0xFFE2DEF0) : const Color(0xFF5B5BD6))
+                  ? (dark ? const Color(0xFFE2DEF0) : const Color(0xFF3B82F6))
                   : (dark ? const Color(0xFF9B8FC0) : const Color(0xFF374151)),
             )),
         ),
@@ -456,7 +457,7 @@ class _CatTab extends StatelessWidget {
   }
 }
 
-// ── كارد المفضلة — مطابق .grid-item-v2 ──
+// ── كارد المفضلة — مطابق .grid-item-v2 ──[cite: 5]
 class _FavCard extends StatelessWidget {
   final FavoriteItem item;
   final bool dark, selected, selectMode;
@@ -481,13 +482,13 @@ class _FavCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // ── الغلاف — height: 148px مطابق HTML ──
+          // ── الغلاف — height: 148px مطابق HTML ──[cite: 5]
           SizedBox(
             height: 148,
             width: double.infinity,
             child: Stack(
               children: [
-                // صورة الغلاف
+                // صورة الغلاف[cite: 5]
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
@@ -531,7 +532,7 @@ class _FavCard extends StatelessWidget {
                   ),
                 ),
 
-                // gradient سفلي فوق الصورة
+                // gradient سفلي فوق الصورة[cite: 5]
                 if (item.cover.isNotEmpty)
                   Positioned.fill(
                     child: ClipRRect(
@@ -549,7 +550,7 @@ class _FavCard extends StatelessWidget {
                     ),
                   ),
 
-                // ── badge تقييم — أسفل يسار، مطابق .cover-rating-badge ──
+                // ── badge تقييم — أسفل يسار، مطابق .cover-rating-badge ──[cite: 5]
                 Positioned(
                   bottom: 8, left: 8,
                   child: Container(
@@ -569,14 +570,14 @@ class _FavCard extends StatelessWidget {
                   ),
                 ),
 
-                // ── checkmark في وضع التحديد ──
+                // ── checkmark في وضع التحديد ──[cite: 5]
                 if (selectMode)
                   Positioned.fill(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
-                        color: selected ? const Color(0x728B5CF6) : Colors.transparent,
+                        color: selected ? (dark ? const Color(0x728B5CF6) : const Color(0x723B82F6)) : Colors.transparent,
                         child: selected
                             ? const Center(
                                 child: Text('✓',
@@ -593,19 +594,19 @@ class _FavCard extends StatelessWidget {
             ),
           ),
 
-          // ── اسم المانغا — مطابق .item-title ──
+          // ── اسم المانغا — مطابق .item-title ──[cite: 5]
           const SizedBox(height: 5),
           Text(item.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            textDirection: TextDirection.ltr, // مطابق HTML: direction: ltr
+            textDirection: TextDirection.ltr, // مطابق HTML: direction: ltr[cite: 5]
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
               color: dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111),
             )),
 
-          // ── زر التصنيف ──
+          // ── زر التصنيف ──[cite: 5]
           const SizedBox(height: 3),
           GestureDetector(
             onTap: onCatTap,
@@ -626,7 +627,7 @@ class _FavCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
-                  color: dark ? const Color(0xFFC9B6F5) : const Color(0xFF5B5BD6),
+                  color: dark ? const Color(0xFFC9B6F5) : const Color(0xFF3B82F6),
                   fontFamily: 'Tajawal',
                 )),
             ),
