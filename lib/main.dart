@@ -6,6 +6,7 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/app_provider.dart';
 import 'services/favorites_service.dart';
 import 'shared/widgets/main_scaffold.dart';
+import 'features/splash/splash_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,13 +16,11 @@ void main() async {
     publishableKey: 'sb_publishable_FHldfud15Bs-CSzFIoc-Jw_vEtz2Hmb',
   );
 
-  // تحميل المفضلة مسبقاً
   await FavoritesService.instance.load();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
-
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(
@@ -47,7 +46,12 @@ class MangaNovaApp extends StatelessWidget {
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
       themeMode: provider.isLightTheme ? ThemeMode.light : ThemeMode.dark,
-      home: const MainScaffold(),
+      // ── السبلاش أول صفحة ──
+      initialRoute: '/splash',
+      routes: {
+        '/splash': (_) => const SplashPage(),
+        '/home':   (_) => const MainScaffold(),
+      },
     );
   }
 }

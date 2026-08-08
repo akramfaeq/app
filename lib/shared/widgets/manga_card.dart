@@ -110,7 +110,6 @@ class _MangaCardSkeletonState extends State<MangaCardSkeleton>
   }
 }
 
-// ── كارد الغلاف مع زر القلب ──
 class _CoverImage extends StatefulWidget {
   final MangaModel manga;
   final bool isDark;
@@ -145,7 +144,6 @@ class _CoverImageState extends State<_CoverImage> {
 
   @override
   Widget build(BuildContext context) {
-    // يقرأ الحالة مباشرة كل مرة من الـ service
     final bool _isFav = _svc.isFavorite(widget.manga.id);
     final isDark   = widget.isDark;
     final manga    = widget.manga;
@@ -170,17 +168,22 @@ class _CoverImageState extends State<_CoverImage> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            hasImage
-                ? CachedNetworkImage(
-                    imageUrl: manga.cover, fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(color: cardBg),
-                    errorWidget: (_, __, ___) => Container(
-                      color: cardBg,
-                      child: Icon(Icons.broken_image_outlined,
-                          color: isDark ? Colors.white24 : const Color(0xFFBBBCE0), size: 24),
-                    ),
-                  )
-                : Container(color: cardBg),
+
+            // ── Hero Animation على الغلاف ──
+            Hero(
+              tag: 'cover-${manga.id}',
+              child: hasImage
+                  ? CachedNetworkImage(
+                      imageUrl: manga.cover, fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(color: cardBg),
+                      errorWidget: (_, __, ___) => Container(
+                        color: cardBg,
+                        child: Icon(Icons.broken_image_outlined,
+                            color: isDark ? Colors.white24 : const Color(0xFFBBBCE0), size: 24),
+                      ),
+                    )
+                  : Container(color: cardBg),
+            ),
 
             if (hasImage)
               Positioned.fill(

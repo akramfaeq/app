@@ -442,21 +442,25 @@ class _HeroCover extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          manga.cover.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: manga.cover, fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(color: const Color(0xFF3A2960)),
-                  errorWidget: (_, __, ___) => Container(
+          // ── Hero Animation — نفس الـ tag بالكارد ──
+          Hero(
+            tag: 'cover-${manga.id}',
+            child: manga.cover.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: manga.cover, fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(color: const Color(0xFF3A2960)),
+                    errorWidget: (_, __, ___) => Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(colors: [Color(0xFF3A2960), Color(0xFF1A1622)]),
+                      ),
+                    ),
+                  )
+                : Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(colors: [Color(0xFF3A2960), Color(0xFF1A1622)]),
                     ),
                   ),
-                )
-              : Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(colors: [Color(0xFF3A2960), Color(0xFF1A1622)]),
-                  ),
-                ),
+          ),
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
