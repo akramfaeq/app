@@ -1,10 +1,13 @@
 class AppConstants {
-  static const String dataBaseUrl =
-      'https://raw.githubusercontent.com/akramfaeq/manga/refs/heads/main/';
+  static const _base = 'https://raw.githubusercontent.com/akramfaeq/manga/refs/heads/main/';
+  static const _worker = 'https://manga-layer.akramfaeq523.workers.dev/?id=';
 
   static String mangaListUrl() =>
-      '${dataBaseUrl}manga-list.json?t=${DateTime.now().millisecondsSinceEpoch}';
+      '${_base}manga-list.json?t=${DateTime.now().millisecondsSinceEpoch}';
 
   static String chaptersUrl(String mangaId) =>
-      '${dataBaseUrl}chapters-$mangaId.json?t=${DateTime.now().millisecondsSinceEpoch}';
+      '${_base}chapters-$mangaId.json?t=${DateTime.now().millisecondsSinceEpoch}';
+
+  static String pageUrl(String fileId) =>
+      '$_worker${Uri.encodeComponent(fileId)}';
 }

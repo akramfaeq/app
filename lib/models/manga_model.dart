@@ -5,8 +5,8 @@ class MangaModel {
   final double rating;
   final int    views;
   final int    chaptersCount;
-  final String status;       // "مستمرة" | "مكتملة"
-  final String type;         // "مانغا" | "مانهوا"
+  final String status;
+  final String type;
   final List<String> genres;
   final String? description;
   final bool   newChapter;
@@ -30,6 +30,17 @@ class MangaModel {
   });
 
   factory MangaModel.fromJson(Map<String, dynamic> json) {
+    // new_chapter في الـ JSON ممكن يكون رقم الفصل (110) أو true/false
+    final newChapterVal = json['new_chapter'];
+    final bool hasNewChapter = newChapterVal != null &&
+        newChapterVal != false &&
+        newChapterVal != 0;
+
+    // لو كان رقم → هو رقم الفصل الجديد، لو bool → نجيب من latest_chapter
+    final String? latestCh = newChapterVal is int
+        ? newChapterVal.toString()
+        : json['latest_chapter']?.toString();
+
     return MangaModel(
       id:            json['id']?.toString() ?? '',
       title:         json['title']?.toString() ?? '',
@@ -44,8 +55,8 @@ class MangaModel {
                          ?.map((e) => e.toString())
                          .toList() ?? [],
       description:   json['description']?.toString(),
-      newChapter:    json['new_chapter'] == true || json['new_chapter'] == 1,
-      latestChapter: json['latest_chapter']?.toString(),
+      newChapter:    hasNewChapter,
+      latestChapter: latestCh,
       updatedAt:     _parseDate(json['updated_at'] ?? json['last_updated']),
     );
   }
@@ -55,13 +66,11 @@ class MangaModel {
     try { return DateTime.parse(val.toString()); } catch (_) { return null; }
   }
 
-  /// تنسيق عدد المشاهدات (1.2K, 3.5M)
   String get formattedViews {
     if (views >= 1000000) return '${(views / 1000000).toStringAsFixed(1)}M';
     if (views >= 1000)    return '${(views / 1000).toStringAsFixed(1)}K';
     return views > 0 ? views.toString() : '';
   }
 
-  /// الحالة بالإنجليزي
   String get statusEn => status == 'مكتملة' ? 'Completed' : 'Ongoing';
 }

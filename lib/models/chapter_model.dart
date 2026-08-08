@@ -1,3 +1,5 @@
+import '../core/constants/app_constants.dart';
+
 class ChapterModel {
   final int number;
   final int pages;
@@ -10,11 +12,18 @@ class ChapterModel {
   });
 
   factory ChapterModel.fromJson(Map<String, dynamic> json) {
-    final pagesList = (json['pages'] as List<dynamic>?) ?? [];
+    final rawPages = (json['pages'] as List<dynamic>?) ?? [];
+
+    // كل صفحة هي Telegram file_id — نحولها لرابط عبر Cloudflare Worker
+    final urls = rawPages
+        .map((e) => AppConstants.pageUrl(e.toString()))
+        .toList()
+        .cast<String>();
+
     return ChapterModel(
       number:   int.tryParse(json['number']?.toString() ?? '0') ?? 0,
-      pages:    pagesList.length,
-      pageUrls: pagesList.map((e) => e.toString()).toList(),
+      pages:    urls.length,
+      pageUrls: urls,
     );
   }
 }

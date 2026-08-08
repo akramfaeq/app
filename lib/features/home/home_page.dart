@@ -9,6 +9,7 @@ import '../../shared/widgets/manga_card.dart';
 import '../../shared/widgets/continue_reading_card.dart';
 import '../details/detail_page.dart';
 import '../reader/reader_page.dart';
+import '../timeline/timeline_page.dart';
 
 class HomePage extends StatefulWidget {
   final void Function(int, {bool sortByRating})? onNavigate;
@@ -60,6 +61,13 @@ class _HomePageState extends State<HomePage>
     Navigator.push(context, MaterialPageRoute(builder: (_) => DetailPage(manga: manga)));
   }
 
+  // ── فتح Timeline ──
+  void _goToTimeline() {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => TimelinePage(mangaList: _list),
+    ));
+  }
+
   Future<void> _openFromProgress(ReadingProgress progress) async {
     final manga = _list.firstWhere(
       (m) => m.id == progress.mangaId,
@@ -103,7 +111,6 @@ class _HomePageState extends State<HomePage>
             slivers: [
               SliverToBoxAdapter(child: _topBar(dark, provider)),
 
-              // ── بطاقة أكمل القراءة ──
               SliverToBoxAdapter(
                 child: ContinueReadingCard(
                   key: _continueKey,
@@ -129,6 +136,7 @@ class _HomePageState extends State<HomePage>
                   ),
                 )
               else ...[
+                // ── آخر الإصدارات — عرض الكل يفتح Timeline ──
                 SliverToBoxAdapter(
                   child: _section(
                     dark, provider, t('latest_releases'),
@@ -136,7 +144,7 @@ class _HomePageState extends State<HomePage>
                     dark ? const Color(0xFF8B5CF6) : AppColors.lightAccentPrimary,
                     dark ? const Color(0x338B5CF6) : const Color(0x1A5B5BD6),
                     _latestReleases,
-                    () => widget.onNavigate?.call(0),
+                    _goToTimeline, // ← Timeline بدل Library
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -167,7 +175,6 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _topBar(bool dark, AppProvider provider) {
-    // ألوان النهاري مطابقة للـ HTML
     final accent   = dark ? AppColors.darkAccentNeon   : AppColors.lightAccentPrimary;
     final neonGlow = dark ? const Color(0x40BF5FFF)    : const Color(0x305B5BD6);
     final textClr  = dark ? AppColors.darkTextPrimary  : AppColors.lightTextPrimary;
@@ -178,14 +185,12 @@ class _HomePageState extends State<HomePage>
       child: Row(
         textDirection: isAr ? TextDirection.ltr : TextDirection.rtl,
         children: [
-          // ── أفاتار ──
           GestureDetector(
             onTap: () => widget.onNavigate?.call(3),
             child: Container(
               width: 40, height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                // النهاري: خلفية فاتحة بدل التدرج الداكن
                 gradient: dark
                     ? const LinearGradient(
                         begin: Alignment.topLeft,
@@ -213,16 +218,12 @@ class _HomePageState extends State<HomePage>
               ),
               child: Icon(
                 Icons.person_outline_rounded,
-                // النهاري: أيقونة بلون الأكسنت بدل اللون الفاتح الداكن
                 color: dark ? const Color(0xFFC9B6F5) : AppColors.lightAccentPrimary,
                 size: 22,
               ),
             ),
           ),
-
           const Spacer(),
-
-          // ── شعار Manga ──
           Text(
             'Manga',
             style: TextStyle(
@@ -230,7 +231,6 @@ class _HomePageState extends State<HomePage>
               fontSize: 22,
               fontWeight: FontWeight.w900,
               color: textClr,
-              // النهاري: بدون text shadow حسب .light-theme * { text-shadow: none }
               shadows: dark
                   ? [
                       Shadow(color: accent, blurRadius: 20),
@@ -254,10 +254,9 @@ class _HomePageState extends State<HomePage>
     List<MangaModel> items,
     VoidCallback onSeeAll,
   ) {
-    final accent   = dark ? AppColors.darkAccentNeon  : AppColors.lightAccentPrimary;
-    final titleClr = dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final seeAllClr = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
-    final t        = provider.t;
+    final titleClr  = dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final seeAllClr = dark ? AppColors.darkAccentNeon  : const Color(0xFF3F5EFB);
+    final t         = provider.t;
 
     return Padding(
       padding: const EdgeInsets.only(top: 20),
@@ -280,26 +279,17 @@ class _HomePageState extends State<HomePage>
                   ),
                   const SizedBox(width: 8),
                 ],
-                Text(
-                  title,
+                Text(title,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: titleClr,
-                  ),
-                ),
+                    fontSize: 16, fontWeight: FontWeight.w700, color: titleClr,
+                  )),
                 const Spacer(),
                 GestureDetector(
                   onTap: onSeeAll,
-                  child: Text(
-                    t('see_all'),
+                  child: Text(t('see_all'),
                     style: TextStyle(
-                      fontSize: 13,
-                      // النهاري: أزرق نيلي #3F5EFB بدل البنفسجي النيون
-                      color: seeAllClr,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                      fontSize: 13, color: seeAllClr, fontWeight: FontWeight.w600,
+                    )),
                 ),
               ],
             ),
