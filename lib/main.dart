@@ -5,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_provider.dart';
 import 'services/favorites_service.dart';
-import 'shared/widgets/main_scaffold.dart';
 import 'features/splash/splash_page.dart';
 
 void main() async {
@@ -46,12 +45,8 @@ class MangaNovaApp extends StatelessWidget {
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
       themeMode: provider.isLightTheme ? ThemeMode.light : ThemeMode.dark,
-      // ── السبلاش أول صفحة ──
-      initialRoute: '/splash',
-      routes: {
-        '/splash': (_) => const SplashPage(),
-        '/home':   (_) => const MainScaffold(),
-      },
+      // السبلاش أول صفحة — بدون named routes
+      home: const SplashPage(),
     );
   }
 }

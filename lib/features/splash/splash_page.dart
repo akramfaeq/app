@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../shared/widgets/main_scaffold.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -80,7 +81,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
     );
 
-    _exitCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+    _exitCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
     _exitOpacity = Tween<double>(begin: 1, end: 0).animate(
       CurvedAnimation(parent: _exitCtrl, curve: Curves.easeIn),
     );
@@ -123,12 +124,26 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     if (!mounted) return;
     _exitCtrl.forward();
 
-    await Future.delayed(const Duration(milliseconds: 450));
+    await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
 
-    // ── انتقل للصفحة الرئيسية ──
+    // ── انتقال سلس ومباشر للصفحة الرئيسية بدون أي وميض أبيض ──
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const MainScaffold(),
+          transitionDuration: const Duration(milliseconds: 400),
+          transitionsBuilder: (_, animation, __, child) {
+            return Container(
+              color: _bgColor, // تثبيت الخلفية السوداء أثناء الترانزيشن لمنع ظهور الأبيض
+              child: FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+            );
+          },
+        ),
+      );
     }
   }
 
