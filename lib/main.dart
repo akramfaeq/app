@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_provider.dart';
 import 'services/favorites_service.dart';
+import 'services/download_service.dart';
 import 'features/splash/splash_page.dart';
 
 void main() async {
@@ -16,6 +17,7 @@ void main() async {
   );
 
   await FavoritesService.instance.load();
+  await DownloadService.instance.loadSavedStates();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
@@ -27,6 +29,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AppProvider()),
         ChangeNotifierProvider.value(value: FavoritesService.instance),
+        ChangeNotifierProvider.value(value: DownloadService.instance),
       ],
       child: const MangaNovaApp(),
     ),
@@ -38,7 +41,7 @@ class MangaNovaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<AppProvider>(); // للاستماع لتغيير اللغة
+    context.watch<AppProvider>();
     return MaterialApp(
       title: 'Manga Nova',
       debugShowCheckedModeBanner: false,

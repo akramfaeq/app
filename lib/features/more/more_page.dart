@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_provider.dart';
 import '../../services/favorites_service.dart';
+import '../../services/download_service.dart';
 import '../favorites/favorites_page.dart';
+import '../downloads/downloads_page.dart';
 
 class MorePage extends StatefulWidget {
   const MorePage({super.key});
@@ -110,6 +112,53 @@ class _MorePageState extends State<MorePage> {
                                 ),
                                 const SizedBox(width: 8),
                               ],
+                              const Icon(Icons.chevron_left_rounded, color: Color(0xFF7A728E), size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // ── بطاقة التحميلات ──
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => const DownloadsPage(),
+                          ));
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                          decoration: BoxDecoration(
+                            color: _cardClr,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.2)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 42, height: 42,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF3B82F6).withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.2)),
+                                ),
+                                child: const Center(
+                                  child: Icon(Icons.download_rounded, color: Color(0xFF3B82F6), size: 20),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('التحميلات',
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textPrimary)),
+                                    SizedBox(height: 2),
+                                    Text('الفصول المحملة للقراءة بدون نت',
+                                      style: TextStyle(fontSize: 11, color: _textSub)),
+                                  ],
+                                ),
+                              ),
                               const Icon(Icons.chevron_left_rounded, color: Color(0xFF7A728E), size: 16),
                             ],
                           ),

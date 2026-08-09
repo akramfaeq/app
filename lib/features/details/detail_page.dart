@@ -8,6 +8,7 @@ import '../../models/manga_model.dart';
 import '../../models/chapter_model.dart';
 import '../../services/manga_service.dart';
 import '../../services/favorites_service.dart';
+import '../../services/download_service.dart';
 import 'package:manga_nova/features/reader/reader_page.dart';
 
 class DetailPage extends StatefulWidget {
@@ -105,13 +106,31 @@ class _DetailPageState extends State<DetailPage> {
     return map[status] ?? status;
   }
 
-  void _openReader(ChapterModel chapter) {
+  void _openReader(ChapterModel chapter) async {
     final sortedAsc = [..._chapters]..sort((a, b) => a.number.compareTo(b.number));
     final idx = sortedAsc.indexWhere((c) => c.number == chapter.number);
+
+    // تحقق من وجود صور محملة
+    final savedPages = await DownloadService.instance
+        .getDownloadedPages(widget.manga.id, chapter.number);
+
+    ChapterModel finalChapter = chapter;
+    if (savedPages != null && savedPages.isNotEmpty) {
+      finalChapter = ChapterModel(
+        number: chapter.number,
+        pages: savedPages.length,
+        pageUrls: savedPages,
+      );
+    }
+
+    final updatedList = sortedAsc.map((c) =>
+        c.number == chapter.number ? finalChapter : c).toList();
+
+    if (!mounted) return;
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => ReaderPage(
         manga: widget.manga,
-        allChapters: sortedAsc,
+        allChapters: updatedList,
         initialChapterIndex: idx == -1 ? 0 : idx,
       ),
     ));
@@ -362,6 +381,7 @@ class _DetailPageState extends State<DetailPage> {
                                     chapter: ch,
                                     chapterLabel: t('chapterWord'),
                                     pageLabel: t('pageWord'),
+                                    mangaId: widget.manga.id,
                                     onTap: () => _openReader(ch),
                                   )),
                                   if (_visibleCount < _filteredChapters.length)
@@ -517,47 +537,186 @@ class _InfoCard extends StatelessWidget {
 class _ChapterItem extends StatelessWidget {
   final ChapterModel chapter;
   final String chapterLabel, pageLabel;
+  final String mangaId;
   final VoidCallback onTap;
 
   const _ChapterItem({
     required this.chapter, required this.chapterLabel,
-    required this.pageLabel, required this.onTap,
+    required this.pageLabel, required this.mangaId,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.darkBgCard,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('$chapterLabel ${chapter.number}',
-                      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: Color(0xFFE2DEF0))),
-                  const SizedBox(height: 3),
-                  Text('${chapter.pages} $pageLabel',
-                      style: const TextStyle(fontSize: 10.5, color: AppColors.darkTextSecondary)),
-                ],
+    return ListenableBuilder(
+      listenable: DownloadService.instance,
+      builder: (context, _) {
+        final dlSvc  = DownloadService.instance;
+        final state  = dlSvc.getState(mangaId, chapter.number);
+        final status = state.status;
+
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.darkBgCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: status == DownloadStatus.downloaded
+                    ? const Color(0xFF10B981).withOpacity(0.3)
+                    : Colors.white.withOpacity(0.05),
               ),
             ),
-            Container(
-              width: 30, height: 30,
-              decoration: BoxDecoration(color: AppColors.darkAccentNeon.withOpacity(0.15), shape: BoxShape.circle),
-              child: const Icon(Icons.play_arrow_rounded, color: AppColors.darkAccentNeon, size: 16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('$chapterLabel ${chapter.number}',
+                              style: const TextStyle(
+                                  fontSize: 13.5, fontWeight: FontWeight.w600,
+                                  color: Color(0xFFE2DEF0))),
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Text('${chapter.pages} $pageLabel',
+                                  style: const TextStyle(
+                                      fontSize: 10.5,
+                                      color: AppColors.darkTextSecondary)),
+                              if (status == DownloadStatus.downloaded) ...[
+                                const SizedBox(width: 6),
+                                const Icon(Icons.download_done_rounded,
+                                    size: 12, color: Color(0xFF10B981)),
+                                const SizedBox(width: 2),
+                                const Text('محمل',
+                                    style: TextStyle(
+                                        fontSize: 10, color: Color(0xFF10B981),
+                                        fontWeight: FontWeight.w600)),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ── زر التشغيل ──
+                    Container(
+                      width: 30, height: 30,
+                      decoration: BoxDecoration(
+                          color: AppColors.darkAccentNeon.withOpacity(0.15),
+                          shape: BoxShape.circle),
+                      child: const Icon(Icons.play_arrow_rounded,
+                          color: AppColors.darkAccentNeon, size: 16),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // ── زر التحميل ──
+                    GestureDetector(
+                      onTap: () async {
+                        if (status == DownloadStatus.downloading) return;
+                        if (status == DownloadStatus.downloaded) {
+                          // خيار الحذف
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              backgroundColor: const Color(0xFF130F1E),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
+                              title: const Text('حذف الفصل المحمل؟',
+                                  style: TextStyle(color: Colors.white,
+                                      fontSize: 15, fontWeight: FontWeight.w700)),
+                              content: const Text('سيتم حذف الفصل من التخزين',
+                                  style: TextStyle(color: Color(0xFF7A728E), fontSize: 13)),
+                              actions: [
+                                TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text('إلغاء',
+                                        style: TextStyle(color: Color(0xFF9B5CF6)))),
+                                TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text('حذف',
+                                        style: TextStyle(color: Color(0xFFE85C5C)))),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            await dlSvc.delete(mangaId, chapter.number);
+                          }
+                          return;
+                        }
+                        // بدء التحميل
+                        dlSvc.download(
+                          mangaId: mangaId,
+                          chapterNumber: chapter.number,
+                          pageUrls: chapter.pageUrls,
+                        );
+                      },
+                      child: Container(
+                        width: 30, height: 30,
+                        decoration: BoxDecoration(
+                          color: _btnColor(status).withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: status == DownloadStatus.downloading
+                            ? Padding(
+                                padding: const EdgeInsets.all(7),
+                                child: CircularProgressIndicator(
+                                  value: state.progress,
+                                  strokeWidth: 2,
+                                  color: _btnColor(status),
+                                  backgroundColor: Colors.white12,
+                                ),
+                              )
+                            : Icon(_btnIcon(status),
+                                color: _btnColor(status), size: 16),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── شريط التقدم ──
+                if (status == DownloadStatus.downloading) ...[
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(99),
+                    child: LinearProgressIndicator(
+                      value: state.progress,
+                      minHeight: 3,
+                      backgroundColor: Colors.white12,
+                      valueColor: const AlwaysStoppedAnimation(Color(0xFFBF5FFF)),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('${(state.progress * 100).toInt()}%',
+                    style: const TextStyle(fontSize: 10, color: Color(0xFF9B8FC0))),
+                ],
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+  Color _btnColor(DownloadStatus s) {
+    switch (s) {
+      case DownloadStatus.downloaded:  return const Color(0xFF10B981);
+      case DownloadStatus.downloading: return const Color(0xFFBF5FFF);
+      case DownloadStatus.failed:      return const Color(0xFFE85C5C);
+      default:                         return const Color(0xFF7A728E);
+    }
+  }
+
+  IconData _btnIcon(DownloadStatus s) {
+    switch (s) {
+      case DownloadStatus.downloaded: return Icons.download_done_rounded;
+      case DownloadStatus.failed:     return Icons.refresh_rounded;
+      default:                        return Icons.download_rounded;
+    }
   }
 }
