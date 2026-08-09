@@ -16,9 +16,6 @@ class MangaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark  = Theme.of(context).brightness == Brightness.dark;
-    final textClr = isDark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
-
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -27,7 +24,7 @@ class MangaCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _CoverImage(manga: manga, isDark: isDark),
+            _CoverImage(manga: manga),
             const SizedBox(height: 5),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -35,7 +32,7 @@ class MangaCard extends StatelessWidget {
                 manga.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textClr),
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE2DEF0)),
               ),
             ),
             const SizedBox(height: 3),
@@ -73,14 +70,10 @@ class _MangaCardSkeletonState extends State<MangaCardSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final clr1   = isDark ? const Color(0xFF1D1630) : const Color(0xFFE8E9F4);
-    final clr2   = isDark ? const Color(0xFF2A2040) : const Color(0xFFF5F5FA);
-
     return AnimatedBuilder(
       animation: _anim,
       builder: (_, __) {
-        final clr = Color.lerp(clr1, clr2, _anim.value)!;
+        final clr = Color.lerp(const Color(0xFF1D1630), const Color(0xFF2A2040), _anim.value)!;
         return SizedBox(
           width: kCardW,
           child: Column(
@@ -91,9 +84,7 @@ class _MangaCardSkeletonState extends State<MangaCardSkeleton>
                 width: kCardW, height: kCardH,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12), color: clr,
-                  border: Border.all(
-                    color: isDark ? const Color(0x20BF5FFF) : const Color(0x205B5BD6),
-                  ),
+                  border: Border.all(color: const Color(0x20BF5FFF)),
                 ),
               ),
               const SizedBox(height: 5),
@@ -112,8 +103,7 @@ class _MangaCardSkeletonState extends State<MangaCardSkeleton>
 
 class _CoverImage extends StatefulWidget {
   final MangaModel manga;
-  final bool isDark;
-  const _CoverImage({required this.manga, required this.isDark});
+  const _CoverImage({required this.manga});
 
   @override
   State<_CoverImage> createState() => _CoverImageState();
@@ -144,23 +134,19 @@ class _CoverImageState extends State<_CoverImage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool _isFav = _svc.isFavorite(widget.manga.id);
-    final isDark   = widget.isDark;
-    final manga    = widget.manga;
-    final cardBg   = isDark ? const Color(0xFF161129) : const Color(0xFFF5F5FA);
-    final border   = isDark ? const Color(0x40BF5FFF) : const Color(0x403F5EFB);
-    final neonGlow = isDark ? const Color(0x40BF5FFF) : const Color(0x153F5EFB);
-    final hasImage = manga.cover.isNotEmpty;
+    final bool isFav  = _svc.isFavorite(widget.manga.id);
+    final manga       = widget.manga;
+    final hasImage    = manga.cover.isNotEmpty;
 
     return Container(
       width: kCardW, height: kCardH,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: cardBg,
-        border: Border.all(color: border, width: 1),
+        color: const Color(0xFF161129),
+        border: Border.all(color: const Color(0x40BF5FFF), width: 1),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(isDark ? 0.4 : 0.08), blurRadius: 15, offset: const Offset(0, 4)),
-          BoxShadow(color: neonGlow, blurRadius: 12),
+          BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 4)),
+          const BoxShadow(color: Color(0x40BF5FFF), blurRadius: 12),
         ],
       ),
       child: ClipRRect(
@@ -168,21 +154,18 @@ class _CoverImageState extends State<_CoverImage> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-
-            // ── Hero Animation على الغلاف ──
             Hero(
               tag: 'cover-${manga.id}',
               child: hasImage
                   ? CachedNetworkImage(
                       imageUrl: manga.cover, fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(color: cardBg),
-                      errorWidget: (_, __, ___) => Container(
-                        color: cardBg,
-                        child: Icon(Icons.broken_image_outlined,
-                            color: isDark ? Colors.white24 : const Color(0xFFBBBCE0), size: 24),
+                      placeholder: (_, __) => const ColoredBox(color: Color(0xFF161129)),
+                      errorWidget: (_, __, ___) => const ColoredBox(
+                        color: Color(0xFF161129),
+                        child: Icon(Icons.broken_image_outlined, color: Colors.white24, size: 24),
                       ),
                     )
-                  : Container(color: cardBg),
+                  : const ColoredBox(color: Color(0xFF161129)),
             ),
 
             if (hasImage)
@@ -198,26 +181,20 @@ class _CoverImageState extends State<_CoverImage> {
                 ),
               ),
 
-            // شارة التقييم
             Positioned(
               bottom: 7, left: 7,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: (isDark || hasImage) ? Colors.black.withOpacity(0.6) : const Color(0xFFEAEBF5),
+                  color: Colors.black.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: (isDark || hasImage) ? const Color(0x59E8B85C) : const Color(0x40D97706),
-                  ),
+                  border: Border.all(color: const Color(0x59E8B85C)),
                 ),
                 child: Text('★ ${manga.rating.toStringAsFixed(1)}',
-                  style: TextStyle(fontSize: 10,
-                    color: isDark ? AppColors.starColor : const Color(0xFFD97706),
-                    fontWeight: FontWeight.w800)),
+                  style: const TextStyle(fontSize: 10, color: AppColors.starColor, fontWeight: FontWeight.w800)),
               ),
             ),
 
-            // زر القلب
             Positioned(
               top: 6, right: 6,
               child: GestureDetector(
@@ -229,19 +206,19 @@ class _CoverImageState extends State<_CoverImage> {
                     color: Colors.black.withOpacity(0.6),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _isFav
+                      color: isFav
                           ? const Color(0xFFE63946).withOpacity(0.7)
                           : const Color(0xFFC084FC).withOpacity(0.3),
                       width: 1,
                     ),
-                    boxShadow: _isFav ? [
+                    boxShadow: isFav ? [
                       BoxShadow(color: const Color(0xFFE63946).withOpacity(0.35), blurRadius: 8),
                     ] : null,
                   ),
                   child: Center(
                     child: Icon(
-                      _isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                      color: _isFav ? const Color(0xFFE63946) : Colors.white,
+                      isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      color: isFav ? const Color(0xFFE63946) : Colors.white,
                       size: 13,
                     ),
                   ),
@@ -261,13 +238,12 @@ class _StarRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final full   = rating.round().clamp(0, 5);
+    final full = rating.round().clamp(0, 5);
     return Row(
       children: List.generate(5, (i) {
         final color = i < full
-            ? (isDark ? AppColors.starColor : const Color(0xFFD97706))
-            : (isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.12));
+            ? AppColors.starColor
+            : Colors.white.withOpacity(0.2);
         return Padding(
           padding: const EdgeInsets.only(right: 2),
           child: Icon(Icons.star_rounded, size: 10, color: color),

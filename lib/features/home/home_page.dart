@@ -61,7 +61,6 @@ class _HomePageState extends State<HomePage>
     Navigator.push(context, MaterialPageRoute(builder: (_) => DetailPage(manga: manga)));
   }
 
-  // ── فتح Timeline ──
   void _goToTimeline() {
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => TimelinePage(mangaList: _list),
@@ -95,21 +94,19 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final provider  = context.watch<AppProvider>();
-    final t         = provider.t;
-    final dir       = provider.dir;
-    final dark      = Theme.of(context).brightness == Brightness.dark;
-    final accentClr = dark ? AppColors.darkAccentNeon : AppColors.lightAccentPrimary;
+    final provider = context.watch<AppProvider>();
+    final t        = provider.t;
+    final dir      = provider.dir;
 
     return Directionality(
       textDirection: dir,
       child: Scaffold(
-        backgroundColor: dark ? AppColors.darkBgDeep : AppColors.lightBgDeep,
+        backgroundColor: AppColors.darkBgDeep,
         body: SafeArea(
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              SliverToBoxAdapter(child: _topBar(dark, provider)),
+              SliverToBoxAdapter(child: _topBar(provider)),
 
               SliverToBoxAdapter(
                 child: ContinueReadingCard(
@@ -119,47 +116,42 @@ class _HomePageState extends State<HomePage>
               ),
 
               if (_loading)
-                SliverFillRemaining(
+                const SliverFillRemaining(
                   child: Center(
-                    child: CircularProgressIndicator(color: accentClr, strokeWidth: 2.5),
+                    child: CircularProgressIndicator(color: AppColors.darkAccentNeon, strokeWidth: 2.5),
                   ),
                 )
               else if (_error != null)
-                SliverFillRemaining(
+                const SliverFillRemaining(
                   child: Center(
-                    child: Text(
-                      t('error_loading'),
-                      style: TextStyle(
-                        color: dark ? Colors.white54 : AppColors.lightTextSecondary,
-                      ),
-                    ),
+                    child: Text('حدث خطأ في تحميل البيانات',
+                      style: TextStyle(color: AppColors.darkTextSecondary)),
                   ),
                 )
               else ...[
-                // ── آخر الإصدارات — عرض الكل يفتح Timeline ──
                 SliverToBoxAdapter(
                   child: _section(
-                    dark, provider, t('latest_releases'),
+                    provider, t('latest_releases'),
                     Icons.access_time_rounded,
-                    dark ? const Color(0xFF8B5CF6) : AppColors.lightAccentPrimary,
-                    dark ? const Color(0x338B5CF6) : const Color(0x1A5B5BD6),
+                    const Color(0xFF8B5CF6),
+                    const Color(0x338B5CF6),
                     _latestReleases,
-                    _goToTimeline, // ← Timeline بدل Library
+                    _goToTimeline,
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _section(
-                    dark, provider, t('top_rated'),
+                    provider, t('top_rated'),
                     Icons.star_rounded,
-                    dark ? AppColors.starColor : AppColors.lightGold,
-                    dark ? const Color(0x33E8B85C) : const Color(0x1AD97706),
+                    AppColors.starColor,
+                    const Color(0x33E8B85C),
                     _topRated,
                     () => widget.onNavigate?.call(1, sortByRating: true),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _section(
-                    dark, provider, t('manga_library'),
+                    provider, t('manga_library'),
                     null, null, null,
                     _randomManga,
                     () => widget.onNavigate?.call(1),
@@ -174,11 +166,8 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _topBar(bool dark, AppProvider provider) {
-    final accent   = dark ? AppColors.darkAccentNeon   : AppColors.lightAccentPrimary;
-    final neonGlow = dark ? const Color(0x40BF5FFF)    : const Color(0x305B5BD6);
-    final textClr  = dark ? AppColors.darkTextPrimary  : AppColors.lightTextPrimary;
-    final isAr     = provider.isArabic;
+  Widget _topBar(AppProvider provider) {
+    final isAr = provider.isArabic;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -191,34 +180,20 @@ class _HomePageState extends State<HomePage>
               width: 40, height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: dark
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF4A1F80), Color(0xFF1A1030)],
-                      )
-                    : LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.lightAccentPrimary.withOpacity(0.2),
-                          AppColors.lightBgCardHover,
-                        ],
-                      ),
-                border: Border.all(color: accent, width: 2),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF4A1F80), Color(0xFF1A1030)],
+                ),
+                border: Border.all(color: AppColors.darkAccentNeon, width: 2),
                 boxShadow: [
-                  BoxShadow(color: neonGlow, blurRadius: 16),
-                  BoxShadow(
-                    color: dark
-                        ? const Color(0x4DBF5FFF)
-                        : AppColors.lightAccentPrimary.withOpacity(0.2),
-                    blurRadius: 32,
-                  ),
+                  BoxShadow(color: AppColors.darkNeonGlow, blurRadius: 16),
+                  const BoxShadow(color: Color(0x4DBF5FFF), blurRadius: 32),
                 ],
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.person_outline_rounded,
-                color: dark ? const Color(0xFFC9B6F5) : AppColors.lightAccentPrimary,
+                color: Color(0xFFC9B6F5),
                 size: 22,
               ),
             ),
@@ -230,13 +205,11 @@ class _HomePageState extends State<HomePage>
               fontFamily: 'Tajawal',
               fontSize: 22,
               fontWeight: FontWeight.w900,
-              color: textClr,
-              shadows: dark
-                  ? [
-                      Shadow(color: accent, blurRadius: 20),
-                      Shadow(color: neonGlow, blurRadius: 40),
-                    ]
-                  : null,
+              color: AppColors.darkTextPrimary,
+              shadows: [
+                Shadow(color: AppColors.darkAccentNeon, blurRadius: 20),
+                Shadow(color: AppColors.darkNeonGlow, blurRadius: 40),
+              ],
             ),
           ),
         ],
@@ -245,7 +218,6 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _section(
-    bool dark,
     AppProvider provider,
     String title,
     IconData? icon,
@@ -254,9 +226,7 @@ class _HomePageState extends State<HomePage>
     List<MangaModel> items,
     VoidCallback onSeeAll,
   ) {
-    final titleClr  = dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final seeAllClr = dark ? AppColors.darkAccentNeon  : const Color(0xFF3F5EFB);
-    final t         = provider.t;
+    final t = provider.t;
 
     return Padding(
       padding: const EdgeInsets.only(top: 20),
@@ -280,15 +250,15 @@ class _HomePageState extends State<HomePage>
                   const SizedBox(width: 8),
                 ],
                 Text(title,
-                  style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700, color: titleClr,
+                  style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.darkTextPrimary,
                   )),
                 const Spacer(),
                 GestureDetector(
                   onTap: onSeeAll,
                   child: Text(t('see_all'),
-                    style: TextStyle(
-                      fontSize: 13, color: seeAllClr, fontWeight: FontWeight.w600,
+                    style: const TextStyle(
+                      fontSize: 13, color: AppColors.darkAccentNeon, fontWeight: FontWeight.w600,
                     )),
                 ),
               ],

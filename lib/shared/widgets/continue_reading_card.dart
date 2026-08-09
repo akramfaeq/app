@@ -17,9 +17,13 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
   ReadingProgress? _progress;
   bool _loading = true;
 
-  static const _accentDark  = Color(0xFF9B5CF6);
-  static const _accentLight = Color(0xFF3F5EFB);
-  static const _gold        = Color(0xFFE8B85C);
+  static const _accent    = Color(0xFF9B5CF6);
+  static const _accentBg  = Color(0x339B5CF6);
+  static const _border    = Color(0x269B5CF6);
+  static const _cardClr   = Color(0xFF130F1E);
+  static const _gold      = Color(0xFFE8B85C);
+  static const _skClr1    = Color(0xFF1D1630);
+  static const _skClr2    = Color(0xFF2A2040);
 
   @override
   void initState() { super.initState(); _load(); }
@@ -34,9 +38,7 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-
-    if (_loading) return _buildSkeleton(dark);
+    if (_loading) return const _SkeletonCard();
     if (_progress == null) return const SizedBox.shrink();
 
     final p        = _progress!;
@@ -44,13 +46,6 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
     final t        = provider.t;
     final dir      = provider.dir;
     final isAr     = provider.isArabic;
-
-    final accent      = dark ? _accentDark : _accentLight;
-    final accentBg    = dark ? const Color(0x339B5CF6) : const Color(0x1A3F5EFB);
-    final cardBorder  = dark ? const Color(0x269B5CF6) : const Color(0x263F5EFB);
-    final cardClr     = dark ? const Color(0xFF130F1E) : Colors.white;
-    final textPrimary = dark ? Colors.white : const Color(0xFF111111);
-    final textSub     = dark ? const Color(0x99FFFFFF) : const Color(0xFF6B7280);
 
     final chapterText = isAr
         ? (p.totalChapters > 0 ? 'الفصل ${p.chapterNumber} من ${p.totalChapters}' : 'الفصل ${p.chapterNumber}')
@@ -68,13 +63,13 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
               children: [
                 Container(
                   width: 24, height: 24,
-                  decoration: BoxDecoration(color: accentBg, borderRadius: BorderRadius.circular(8)),
-                  child: Icon(Icons.play_arrow_rounded, size: 13, color: accent),
+                  decoration: BoxDecoration(color: _accentBg, borderRadius: BorderRadius.circular(8)),
+                  child: const Icon(Icons.play_arrow_rounded, size: 13, color: _accent),
                 ),
                 const SizedBox(width: 8),
                 Text(t('continue_reading'),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
-                      color: textPrimary, fontFamily: 'Tajawal')),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
+                      color: Colors.white, fontFamily: 'Tajawal')),
               ],
             ),
             const SizedBox(height: 8),
@@ -85,11 +80,11 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                 height: 72,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: cardClr,
+                  color: _cardClr,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: cardBorder, width: 1),
+                  border: Border.all(color: _border, width: 1),
                   boxShadow: [BoxShadow(
-                    color: Colors.black.withOpacity(dark ? 0.4 : 0.06),
+                    color: Colors.black.withOpacity(0.4),
                     blurRadius: 8, offset: const Offset(0, 3),
                   )],
                 ),
@@ -105,15 +100,16 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                               child: CachedNetworkImage(
                                 imageUrl: p.mangaCover,
                                 width: 42, height: 54, fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
+                                placeholder: (_, __) => const SizedBox(
                                   width: 42, height: 54,
-                                  color: dark ? const Color(0xFF1D1630) : const Color(0xFFEAEBF5),
+                                  child: ColoredBox(color: Color(0xFF1D1630)),
                                 ),
-                                errorWidget: (_, __, ___) => Container(
+                                errorWidget: (_, __, ___) => const SizedBox(
                                   width: 42, height: 54,
-                                  color: dark ? const Color(0xFF1D1630) : const Color(0xFFEAEBF5),
-                                  child: Icon(Icons.image_not_supported,
-                                      color: dark ? Colors.white24 : const Color(0xFFBBBCE0), size: 16),
+                                  child: ColoredBox(
+                                    color: Color(0xFF1D1630),
+                                    child: Icon(Icons.image_not_supported, color: Colors.white24, size: 16),
+                                  ),
                                 ),
                               ),
                             ),
@@ -124,13 +120,13 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(p.mangaTitle,
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-                                        color: textPrimary, fontFamily: 'Tajawal',
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
+                                        color: Colors.white, fontFamily: 'Tajawal',
                                         overflow: TextOverflow.ellipsis),
                                     maxLines: 1),
                                   const SizedBox(height: 2),
                                   Text(chapterText,
-                                    style: TextStyle(fontSize: 11, color: textSub, fontFamily: 'Tajawal')),
+                                    style: const TextStyle(fontSize: 11, color: Color(0x99FFFFFF), fontFamily: 'Tajawal')),
                                 ],
                               ),
                             ),
@@ -138,8 +134,8 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                             Container(
                               width: 34, height: 34,
                               decoration: BoxDecoration(
-                                shape: BoxShape.circle, color: accent,
-                                boxShadow: [BoxShadow(color: accent.withOpacity(0.35), blurRadius: 6)],
+                                shape: BoxShape.circle, color: _accent,
+                                boxShadow: [BoxShadow(color: _accent.withOpacity(0.35), blurRadius: 6)],
                               ),
                               child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
                             ),
@@ -152,9 +148,7 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
                       child: LinearProgressIndicator(
                         value: p.progress.clamp(0.0, 1.0),
                         minHeight: 2.5,
-                        backgroundColor: dark
-                            ? Colors.white.withOpacity(0.06)
-                            : Colors.black.withOpacity(0.08),
+                        backgroundColor: Colors.white.withOpacity(0.06),
                         valueColor: const AlwaysStoppedAnimation<Color>(_gold),
                       ),
                     ),
@@ -167,20 +161,10 @@ class ContinueReadingCardState extends State<ContinueReadingCard> {
       ),
     );
   }
-
-  Widget _buildSkeleton(bool dark) {
-    final clr1    = dark ? const Color(0xFF1D1630) : const Color(0xFFE8E9F4);
-    final clr2    = dark ? const Color(0xFF2A2040) : const Color(0xFFF0F0F8);
-    final cardClr = dark ? const Color(0xFF130F1E) : Colors.white;
-    final border  = dark ? const Color(0x269B5CF6) : const Color(0x263F5EFB);
-    return _SkeletonCard(clr1: clr1, clr2: clr2, cardClr: cardClr, cardBorder: border);
-  }
 }
 
 class _SkeletonCard extends StatefulWidget {
-  final Color clr1, clr2, cardClr, cardBorder;
-  const _SkeletonCard({required this.clr1, required this.clr2,
-      required this.cardClr, required this.cardBorder});
+  const _SkeletonCard();
 
   @override
   State<_SkeletonCard> createState() => _SkeletonCardState();
@@ -208,7 +192,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
     return AnimatedBuilder(
       animation: _anim,
       builder: (_, __) {
-        final clr = Color.lerp(widget.clr1, widget.clr2, _anim.value)!;
+        final clr = Color.lerp(const Color(0xFF1D1630), const Color(0xFF2A2040), _anim.value)!;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Column(
@@ -226,9 +210,9 @@ class _SkeletonCardState extends State<_SkeletonCard>
                 width: MediaQuery.of(context).size.width * 0.75,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: widget.cardClr,
+                  color: const Color(0xFF130F1E),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: widget.cardBorder, width: 1),
+                  border: Border.all(color: const Color(0x269B5CF6), width: 1),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),

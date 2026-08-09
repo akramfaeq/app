@@ -45,13 +45,13 @@ class _ReaderPageState extends State<ReaderPage> {
 
   Timer? _readingTimer;
   int _secondsRead = 0;
-  static const _minSeconds = 9;
+  static const _minSeconds  = 9;
   static const _maxProgress = 0.95;
 
-  static const _topbarColor = Color(0xBF0A0514); // الليلي فقط
+  static const _topbarColor = Color(0xBF0A0514);
   static const _dropBgColor = Color(0xF70E0814);
   static const _goldColor   = Color(0xFFE8B85C);
-  static const _accentColor = Color(0xFF9B5CF6); // الليلي فقط
+  static const _accent      = Color(0xFF9B5CF6);
   static const _textPrimary = Color(0xFFE2DEF0);
   static const _textSub     = Color(0x80FFFFFF);
 
@@ -132,9 +132,7 @@ class _ReaderPageState extends State<ReaderPage> {
     _readingTimer?.cancel();
     _readingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       _secondsRead++;
-      if (_secondsRead >= _minSeconds) {
-        _trySaveProgress();
-      }
+      if (_secondsRead >= _minSeconds) _trySaveProgress();
     });
   }
 
@@ -237,12 +235,9 @@ class _ReaderPageState extends State<ReaderPage> {
     final provider = context.watch<AppProvider>();
     final t        = provider.t;
     final isAr     = provider.isArabic;
-    final dark     = Theme.of(context).brightness == Brightness.dark;
-    // القارئ: ليلي بنفسجي، نهاري أزرق نيلي
-    final accent   = dark ? _accentColor : const Color(0xFF3F5EFB);
 
     return Scaffold(
-      backgroundColor: Colors.black, // 🖤 خلفية سوداء دائماً للقارئ بالكامل
+      backgroundColor: Colors.black,
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _onTap,
@@ -260,11 +255,11 @@ class _ReaderPageState extends State<ReaderPage> {
                 ),
               ),
 
-            if (_chaptersDropOpen) _buildChaptersDropdown(t, accent, dark),
+            if (_chaptersDropOpen) _buildChaptersDropdown(t),
 
-            _buildTopBar(isAr, accent, dark),
+            _buildTopBar(isAr),
 
-            _buildProgressBar(isAr, accent, dark),
+            _buildProgressBar(isAr),
           ],
         ),
       ),
@@ -274,10 +269,7 @@ class _ReaderPageState extends State<ReaderPage> {
   Widget _buildVertical(String Function(String) t) {
     final pages = _chapter.pageUrls;
     if (pages.isEmpty) {
-      return Center(
-        child: Text(t('no_pages'),
-            style: const TextStyle(color: _textSub, fontSize: 14)),
-      );
+      return Center(child: Text(t('no_pages'), style: const TextStyle(color: _textSub, fontSize: 14)));
     }
     return ListView.builder(
       controller: _vertScrollCtrl,
@@ -291,13 +283,9 @@ class _ReaderPageState extends State<ReaderPage> {
   Widget _buildHorizontal(String Function(String) t, bool isAr) {
     final pages = _chapter.pageUrls;
     if (pages.isEmpty) {
-      return Center(
-        child: Text(t('no_pages_short'),
-            style: const TextStyle(color: _textSub, fontSize: 14)),
-      );
+      return Center(child: Text(t('no_pages_short'), style: const TextStyle(color: _textSub, fontSize: 14)));
     }
     final size = MediaQuery.of(context).size;
-    // عربي: RTL (مانغا تُقرأ من اليمين) | إنجليزي: LTR (مانهوا/كوميك من اليسار)
     return Directionality(
       textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: ListView.builder(
@@ -313,10 +301,9 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  Widget _buildTopBar(bool isAr, Color accent, bool dark) {
+  Widget _buildTopBar(bool isAr) {
     final isHoriz = _mode == ReadingMode.horizontal;
 
-    // عربي: السابق يمين (chevron_right) | إنجليزي: السابق يسار (chevron_left)
     final Widget prevBtn = _NavBtn(
       icon: isAr ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
       onTap: () => _goChapterDir('prev'),
@@ -341,10 +328,9 @@ class _ReaderPageState extends State<ReaderPage> {
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               color: _topbarColor,
-              border: Border(bottom: BorderSide(color: accent.withOpacity(0.15), width: 1)),
+              border: Border(bottom: BorderSide(color: _accent.withOpacity(0.15), width: 1)),
             ),
             child: Row(
-              // عربي: السابق يمين | إنجليزي: السابق يسار
               textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
               children: [
                 prevBtn,
@@ -359,8 +345,7 @@ class _ReaderPageState extends State<ReaderPage> {
                       widget.manga.title,
                       style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        overflow: TextOverflow.ellipsis,
+                        color: Colors.white, overflow: TextOverflow.ellipsis,
                       ),
                       maxLines: 1,
                       textAlign: TextAlign.center,
@@ -374,13 +359,9 @@ class _ReaderPageState extends State<ReaderPage> {
                     width: 38, height: 38,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isHoriz
-                          ? accent.withOpacity(0.22)
-                          : const Color(0x12FFFFFF),
+                      color: isHoriz ? _accent.withOpacity(0.22) : const Color(0x12FFFFFF),
                       border: Border.all(
-                        color: isHoriz
-                            ? accent.withOpacity(0.6)
-                            : const Color(0x26FFFFFF),
+                        color: isHoriz ? _accent.withOpacity(0.6) : const Color(0x26FFFFFF),
                       ),
                     ),
                     child: Center(
@@ -403,8 +384,8 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  Widget _buildProgressBar(bool isAr, Color accent, bool dark) {
-    final total = _chapter.pageUrls.length;
+  Widget _buildProgressBar(bool isAr) {
+    final total   = _chapter.pageUrls.length;
     final current = total > 0 ? _currentPageIndex + 1 : 0;
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
@@ -415,8 +396,7 @@ class _ReaderPageState extends State<ReaderPage> {
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
         child: Row(
           children: [
-            Text(
-              '$current / $total',
+            Text('$current / $total',
               style: const TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w600,
                 color: _goldColor, letterSpacing: 0.4,
@@ -434,7 +414,6 @@ class _ReaderPageState extends State<ReaderPage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(999),
                   child: Directionality(
-                    // عربي: يمتلئ من اليمين | إنجليزي: يمتلئ من اليسار
                     textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
                     child: LinearProgressIndicator(
                       value: _progress,
@@ -452,7 +431,7 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  Widget _buildChaptersDropdown(String Function(String) t, Color accent, bool dark) {
+  Widget _buildChaptersDropdown(String Function(String) t) {
     final sorted = widget.allChapters.reversed.toList();
     return Positioned(
       top: 56, left: 0, right: 0,
@@ -460,39 +439,32 @@ class _ReaderPageState extends State<ReaderPage> {
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.55,
-            ),
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.55),
             decoration: BoxDecoration(
               color: _dropBgColor,
-              border: Border(bottom: BorderSide(color: accent.withOpacity(0.25), width: 1)),
+              border: Border(bottom: BorderSide(color: _accent.withOpacity(0.25), width: 1)),
             ),
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
               shrinkWrap: true,
               itemCount: sorted.length,
               itemBuilder: (ctx, i) {
-                final ch = sorted[i];
+                final ch        = sorted[i];
                 final isCurrent = ch.number == _chapter.number;
                 return GestureDetector(
                   onTap: () {
                     HapticFeedback.selectionClick();
-                    final realIdx = widget.allChapters
-                        .indexWhere((c) => c.number == ch.number);
+                    final realIdx = widget.allChapters.indexWhere((c) => c.number == ch.number);
                     if (realIdx != -1) _goToChapter(realIdx);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 5),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                     decoration: BoxDecoration(
-                      color: isCurrent
-                          ? accent.withOpacity(0.2)
-                          : const Color(0x08FFFFFF),
+                      color: isCurrent ? _accent.withOpacity(0.2) : const Color(0x08FFFFFF),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: isCurrent
-                            ? accent.withOpacity(0.45)
-                            : const Color(0x10FFFFFF),
+                        color: isCurrent ? _accent.withOpacity(0.45) : const Color(0x10FFFFFF),
                       ),
                     ),
                     child: Row(
@@ -509,10 +481,7 @@ class _ReaderPageState extends State<ReaderPage> {
                         if (isCurrent)
                           Container(
                             width: 7, height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: accent,
-                            ),
+                            decoration: const BoxDecoration(shape: BoxShape.circle, color: _accent),
                           ),
                       ],
                     ),
@@ -536,8 +505,7 @@ class _NavBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark   = Theme.of(context).brightness == Brightness.dark;
-    final accent = dark ? const Color(0xFF9B5CF6) : const Color(0xFF3F5EFB);
+    const accent = Color(0xFF9B5CF6);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -550,7 +518,7 @@ class _NavBtn extends StatelessWidget {
             BoxShadow(color: accent.withOpacity(0.5), blurRadius: 12),
           ],
         ),
-        child: Icon(icon, color: Colors.white, size: 22),
+        child: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 22),
       ),
     );
   }
@@ -558,11 +526,9 @@ class _NavBtn extends StatelessWidget {
 
 class _ModeIcon extends StatelessWidget {
   const _ModeIcon();
-
   @override
-  Widget build(BuildContext context) {
-    return CustomPaint(size: const Size(20, 20), painter: _ModeIconPainter());
-  }
+  Widget build(BuildContext context) =>
+      CustomPaint(size: const Size(20, 20), painter: _ModeIconPainter());
 }
 
 class _ModeIconPainter extends CustomPainter {
@@ -606,41 +572,33 @@ class _PageImageState extends State<_PageImage>
   @override
   void initState() {
     super.initState();
-    _blurCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
+    _blurCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _blurAnim = Tween<double>(begin: 6.0, end: 0.0).animate(
       CurvedAnimation(parent: _blurCtrl, curve: Curves.easeOut),
     );
   }
 
   @override
-  void dispose() {
-    _blurCtrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _blurCtrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
-    final t      = context.read<AppProvider>().t;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = isDark ? const Color(0xFF9B5CF6) : const Color(0xFF3F5EFB);
+    final t = context.read<AppProvider>().t;
 
     return Container(
-      color: Colors.black, // 🖤 ضمان خلفية سوداء للمكان المحيط بالصورة
+      color: Colors.black,
       child: CachedNetworkImage(
         imageUrl: widget.url,
         fit: widget.fit,
         width: double.infinity,
         height: widget.fillH,
         placeholder: (_, __) => Container(
-          color: Colors.black, // 🖤 أسود أثناء التحميل
+          color: Colors.black,
           height: widget.fillH ?? 300,
-          child: Center(
+          child: const Center(
             child: SizedBox(
               width: 24, height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2, color: accent),
+              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF9B5CF6)),
             ),
           ),
         ),
@@ -657,15 +615,13 @@ class _PageImageState extends State<_PageImage>
               );
             },
             child: Image(
-              image: imageProvider,
-              fit: widget.fit,
-              width: double.infinity,
-              height: widget.fillH,
+              image: imageProvider, fit: widget.fit,
+              width: double.infinity, height: widget.fillH,
             ),
           );
         },
         errorWidget: (_, __, ___) => Container(
-          color: Colors.black, // 🖤 أسود عند حدوث خطأ
+          color: Colors.black,
           height: 160,
           child: Center(
             child: Text(t('page_load_error'),

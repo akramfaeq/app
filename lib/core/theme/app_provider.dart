@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppProvider extends ChangeNotifier {
-  bool _isLightTheme = false;
   String _lang = 'ar';
 
-  bool get isLightTheme => _isLightTheme;
   bool get isArabic => _lang == 'ar';
   String get lang => _lang;
   TextDirection get dir => _lang == 'ar' ? TextDirection.rtl : TextDirection.ltr;
@@ -16,15 +14,7 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    _isLightTheme = prefs.getBool('isLightTheme') ?? false;
     _lang = prefs.getString('app_lang') ?? 'ar';
-    notifyListeners();
-  }
-
-  Future<void> toggleTheme() async {
-    _isLightTheme = !_isLightTheme;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLightTheme', _isLightTheme);
     notifyListeners();
   }
 
@@ -62,8 +52,6 @@ class AppProvider extends ChangeNotifier {
       'language': 'اللغة',
       'language_current': 'العربية',
       'language_switch': 'English',
-      'day_mode': 'الوضع النهاري',
-      'day_mode_sub': 'تبديل المظهر',
       'about': 'عن التطبيق',
       'version': 'الإصدار 1.0.0',
       'contact_us': 'تواصل معنا',
@@ -125,11 +113,10 @@ class AppProvider extends ChangeNotifier {
       // ── شيت عن التطبيق ──
       'about_desc': 'تطبيق متكامل لقراءة المانجا، يوفر تجربة سلسة وسريعة مع واجهة عصرية مصممة خصيصاً لعشاق القصص المصورة.',
       'features_title': '✨ ميزات التطبيق',
-      'feature_1': '🌓 دعم الوضع الداكن والنهاري',
-      'feature_2': '📚 مكتبة شخصية بتصنيفات متعددة',
-      'feature_3': '🔖 حفظ تقدم القراءة والمفضلة',
-      'feature_4': '↕️ قارئ بوضعين عمودي وأفقي',
-      'feature_5': '⭐ نظام تقييم ومتابعة الإصدارات',
+      'feature_1': '📚 مكتبة شخصية بتصنيفات متعددة',
+      'feature_2': '🔖 حفظ تقدم القراءة والمفضلة',
+      'feature_3': '↕️ قارئ بوضعين عمودي وأفقي',
+      'feature_4': '⭐ نظام تقييم ومتابعة الإصدارات',
       'disclaimer': '⚠️ إخلاء المسؤولية: جميع المحتويات والترجمات والمواد المعروضة في هذا التطبيق هي ملك حصري لأصحابها وصانعيها الأصليين.',
       'dev_title': '💻 التطوير',
       'dev_names': 'أكرم فائق & يوسف سفيان',
@@ -155,8 +142,6 @@ class AppProvider extends ChangeNotifier {
       'language': 'Language',
       'language_current': 'English',
       'language_switch': 'عربي',
-      'day_mode': 'Light Mode',
-      'day_mode_sub': 'Toggle appearance',
       'about': 'About',
       'version': 'Version 1.0.0',
       'contact_us': 'Contact Us',
@@ -218,11 +203,10 @@ class AppProvider extends ChangeNotifier {
       // ── About Sheet ──
       'about_desc': 'A full-featured manga reading app with a smooth, fast experience and a modern interface designed for comic lovers.',
       'features_title': '✨ App Features',
-      'feature_1': '🌓 Dark & Light mode support',
-      'feature_2': '📚 Personal library with multiple categories',
-      'feature_3': '🔖 Save reading progress and favorites',
-      'feature_4': '↕️ Reader with vertical & horizontal modes',
-      'feature_5': '⭐ Rating system and release tracking',
+      'feature_1': '📚 Personal library with multiple categories',
+      'feature_2': '🔖 Save reading progress and favorites',
+      'feature_3': '↕️ Reader with vertical & horizontal modes',
+      'feature_4': '⭐ Rating system and release tracking',
       'disclaimer': '⚠️ Disclaimer: All content, translations, and materials in this app are the exclusive property of their original owners and creators.',
       'dev_title': '💻 Development',
       'dev_names': 'Akram Faeq & Yousef Sofian',

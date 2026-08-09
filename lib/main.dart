@@ -38,14 +38,12 @@ class MangaNovaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    context.watch<AppProvider>(); // للاستماع لتغيير اللغة
     return MaterialApp(
       title: 'Manga Nova',
       debugShowCheckedModeBanner: false,
-      theme: buildLightTheme(),
-      darkTheme: buildDarkTheme(),
-      themeMode: provider.isLightTheme ? ThemeMode.light : ThemeMode.dark,
-      // السبلاش أول صفحة — بدون named routes
+      theme: buildDarkTheme(),
+      themeMode: ThemeMode.dark,
       home: const SplashPage(),
     );
   }

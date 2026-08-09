@@ -13,21 +13,26 @@ import 'package:manga_nova/features/reader/reader_page.dart';
 class DetailPage extends StatefulWidget {
   final MangaModel manga;
   const DetailPage({super.key, required this.manga});
-
   @override
   State<DetailPage> createState() => _DetailPageState();
 }
 
 class _DetailPageState extends State<DetailPage> {
-  final _service = MangaService();
-  final _svc = FavoritesService.instance;
+  final _service    = MangaService();
+  final _svc        = FavoritesService.instance;
   List<ChapterModel> _chapters = [];
   bool _loadingChapters = true;
-  bool _sortDescending = true;
-  bool _isFav = false;
-  final _searchCtrl = TextEditingController();
-  String _searchQuery = '';
-  int _visibleCount = 30;
+  bool _sortDescending  = true;
+  bool _isFav           = false;
+  final _searchCtrl     = TextEditingController();
+  String _searchQuery   = '';
+  int _visibleCount     = 30;
+
+  static const _bg      = AppColors.darkBgDeep;
+  static const _cardBg  = AppColors.darkBgCard;
+  static const _accent  = AppColors.darkAccentNeon;
+  static const _textClr = Color(0xFFE2DEF0);
+  static const _subClr  = AppColors.darkTextSecondary;
 
   @override
   void initState() {
@@ -82,8 +87,7 @@ class _DetailPageState extends State<DetailPage> {
     return list;
   }
 
-  // ترجمة قيم البيانات القادمة من الـ API
-  String _translateType(String type, String Function(String) t, bool isAr) {
+  String _translateType(String type, bool isAr) {
     if (isAr) return type;
     const map = {
       'مانغا': 'Manga', 'مانهوا': 'Manhwa', 'مانها': 'Manhua',
@@ -92,7 +96,7 @@ class _DetailPageState extends State<DetailPage> {
     return map[type] ?? type;
   }
 
-  String _translateStatus(String status, String Function(String) t, bool isAr) {
+  String _translateStatus(String status, bool isAr) {
     if (isAr) return status;
     const map = {
       'مستمرة': 'Ongoing', 'مكتملة': 'Completed',
@@ -102,8 +106,7 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void _openReader(ChapterModel chapter) {
-    final sortedAsc = [..._chapters]
-      ..sort((a, b) => a.number.compareTo(b.number));
+    final sortedAsc = [..._chapters]..sort((a, b) => a.number.compareTo(b.number));
     final idx = sortedAsc.indexWhere((c) => c.number == chapter.number);
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => ReaderPage(
@@ -121,23 +124,16 @@ class _DetailPageState extends State<DetailPage> {
     final dir      = provider.dir;
     final isAr     = provider.isArabic;
 
-    final dark    = Theme.of(context).brightness == Brightness.dark;
-    final bg      = dark ? AppColors.darkBgDeep : AppColors.lightBgDeep;
-    final cardBg  = dark ? AppColors.darkBgCard : AppColors.lightBgCard;
-    final accent  = dark ? AppColors.darkAccentNeon : const Color(0xFF3F5EFB);
-    final textClr = dark ? const Color(0xFFE2DEF0) : const Color(0xFF111111);
-    final subClr  = dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-
     return Directionality(
       textDirection: dir,
       child: Scaffold(
-        backgroundColor: bg,
+        backgroundColor: _bg,
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: _HeroCover(
-                manga: widget.manga, dark: dark, accent: accent,
+                manga: widget.manga,
                 isFav: _isFav,
                 isArabic: isAr,
                 onFavTap: _toggleFav,
@@ -164,24 +160,24 @@ class _DetailPageState extends State<DetailPage> {
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFFE8B85C))),
                       ),
                       const SizedBox(height: 10),
-                      Text(widget.manga.title, style: TextStyle(
-                          fontSize: 26, fontWeight: FontWeight.w900, color: textClr, height: 1.15)),
+                      Text(widget.manga.title, style: const TextStyle(
+                          fontSize: 26, fontWeight: FontWeight.w900, color: _textClr, height: 1.15)),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 6, runSpacing: 6,
                         children: widget.manga.genres.map((g) => Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                           decoration: BoxDecoration(
-                            color: accent.withOpacity(0.1),
+                            color: _accent.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: accent.withOpacity(0.3)),
+                            border: Border.all(color: _accent.withOpacity(0.3)),
                           ),
-                          child: Text(g, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: accent)),
+                          child: Text(g, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _accent)),
                         )).toList(),
                       ),
                       const SizedBox(height: 18),
                       Text(widget.manga.description ?? '',
-                          style: TextStyle(fontSize: 13.5, color: subClr, height: 1.7)),
+                          style: const TextStyle(fontSize: 13.5, color: _subClr, height: 1.7)),
                       const SizedBox(height: 18),
                       Row(
                         children: [
@@ -196,17 +192,13 @@ class _DetailPageState extends State<DetailPage> {
                               child: Container(
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: dark
-                                        ? [const Color(0xFF8B3CF6), const Color(0xFFA855F7)]
-                                        : [const Color(0xFF3F5EFB), const Color(0xFF5B7BFF)],
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF8B3CF6), Color(0xFFA855F7)],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: dark
-                                          ? const Color(0xFF8B3CF6).withOpacity(0.5)
-                                          : const Color(0xFF3F5EFB).withOpacity(0.4),
+                                      color: const Color(0xFF8B3CF6).withOpacity(0.5),
                                       blurRadius: 20,
                                     ),
                                   ],
@@ -230,12 +222,12 @@ class _DetailPageState extends State<DetailPage> {
                               duration: const Duration(milliseconds: 200),
                               width: 50, height: 50,
                               decoration: BoxDecoration(
-                                color: cardBg,
+                                color: _cardBg,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: _isFav ? accent.withOpacity(0.6) : accent.withOpacity(0.15)),
+                                border: Border.all(color: _isFav ? _accent.withOpacity(0.6) : _accent.withOpacity(0.15)),
                               ),
                               child: Icon(_isFav ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                                  color: _isFav ? accent : subClr, size: 22),
+                                  color: _isFav ? _accent : _subClr, size: 22),
                             ),
                           ),
                         ],
@@ -243,54 +235,47 @@ class _DetailPageState extends State<DetailPage> {
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          _InfoCard(label: t('chapters'), value: widget.manga.chaptersCount.toString(),
-                              dark: dark, cardBg: cardBg, textClr: textClr),
+                          _InfoCard(label: t('chapters'), value: widget.manga.chaptersCount.toString()),
                           const SizedBox(width: 8),
-                          _InfoCard(label: t('type'),
-                              value: _translateType(widget.manga.type, t, provider.isArabic),
-                              dark: dark, cardBg: cardBg, textClr: textClr),
+                          _InfoCard(label: t('type'), value: _translateType(widget.manga.type, isAr)),
                           const SizedBox(width: 8),
-                          _InfoCard(label: t('status'),
-                              value: _translateStatus(widget.manga.status, t, provider.isArabic),
-                              dark: dark, cardBg: cardBg, textClr: textClr, isStatus: true),
+                          _InfoCard(label: t('status'), value: _translateStatus(widget.manga.status, isAr), isStatus: true),
                         ],
                       ),
                       const SizedBox(height: 22),
-                      // ─── قسم الفصول ───
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: cardBg,
+                          color: _cardBg,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.white.withOpacity(0.06)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // هيدر الفصول
                             Row(
                               children: [
                                 Text(t('chapters'),
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: textClr)),
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _textClr)),
                                 const Spacer(),
                                 GestureDetector(
                                   onTap: () => setState(() => _sortDescending = !_sortDescending),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: accent.withOpacity(0.1),
+                                      color: _accent.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: accent.withOpacity(0.2)),
+                                      border: Border.all(color: _accent.withOpacity(0.2)),
                                     ),
                                     child: Row(
                                       children: [
                                         Icon(_sortDescending
                                             ? Icons.arrow_downward_rounded
                                             : Icons.arrow_upward_rounded,
-                                            size: 12, color: accent),
+                                            size: 12, color: _accent),
                                         const SizedBox(width: 4),
                                         Text(_sortDescending ? t('newest') : t('oldest'),
-                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: accent)),
+                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _accent)),
                                       ],
                                     ),
                                   ),
@@ -298,13 +283,12 @@ class _DetailPageState extends State<DetailPage> {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            // بحث
                             Container(
                               height: 46,
                               decoration: BoxDecoration(
-                                color: dark ? const Color(0xFF1A1622) : const Color(0xFFF5F5FA),
+                                color: const Color(0xFF1A1622),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: accent.withOpacity(0.15)),
+                                border: Border.all(color: _accent.withOpacity(0.15)),
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -312,7 +296,7 @@ class _DetailPageState extends State<DetailPage> {
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 12),
                                     child: Icon(Icons.search_rounded, size: 18,
-                                        color: _searchQuery.isNotEmpty ? accent : subClr),
+                                        color: _searchQuery.isNotEmpty ? _accent : _subClr),
                                   ),
                                   Expanded(
                                     child: TextField(
@@ -322,10 +306,10 @@ class _DetailPageState extends State<DetailPage> {
                                       keyboardType: TextInputType.number,
                                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                       onChanged: (val) => setState(() => _searchQuery = val.trim()),
-                                      style: TextStyle(fontSize: 13, color: textClr),
+                                      style: const TextStyle(fontSize: 13, color: _textClr),
                                       decoration: InputDecoration(
                                         hintText: t('chapterSearch'),
-                                        hintStyle: TextStyle(fontSize: 12, color: subClr),
+                                        hintStyle: const TextStyle(fontSize: 12, color: _subClr),
                                         hintTextDirection: dir,
                                         border: InputBorder.none,
                                         contentPadding: EdgeInsets.zero,
@@ -340,9 +324,9 @@ class _DetailPageState extends State<DetailPage> {
                                                   margin: const EdgeInsets.all(6),
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color: subClr.withOpacity(0.25),
+                                                    color: _subClr.withOpacity(0.25),
                                                   ),
-                                                  child: Icon(Icons.close_rounded, size: 12, color: subClr),
+                                                  child: const Icon(Icons.close_rounded, size: 12, color: _subClr),
                                                 ),
                                               )
                                             : null,
@@ -355,12 +339,11 @@ class _DetailPageState extends State<DetailPage> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            // قائمة الفصول
                             if (_loadingChapters)
-                              Center(
+                              const Center(
                                 child: Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: CircularProgressIndicator(color: accent, strokeWidth: 2),
+                                  padding: EdgeInsets.all(24),
+                                  child: CircularProgressIndicator(color: _accent, strokeWidth: 2),
                                 ),
                               )
                             else if (_filteredChapters.isEmpty)
@@ -368,7 +351,7 @@ class _DetailPageState extends State<DetailPage> {
                                 padding: const EdgeInsets.all(24),
                                 child: Center(
                                   child: Text(t('noChapters'),
-                                      style: TextStyle(color: subClr, fontSize: 13)),
+                                      style: const TextStyle(color: _subClr, fontSize: 13)),
                                 ),
                               )
                             else
@@ -377,11 +360,6 @@ class _DetailPageState extends State<DetailPage> {
                                 return [
                                   ...visible.map((ch) => _ChapterItem(
                                     chapter: ch,
-                                    dark: dark,
-                                    accent: accent,
-                                    cardBg: cardBg,
-                                    textClr: textClr,
-                                    subClr: subClr,
                                     chapterLabel: t('chapterWord'),
                                     pageLabel: t('pageWord'),
                                     onTap: () => _openReader(ch),
@@ -395,12 +373,12 @@ class _DetailPageState extends State<DetailPage> {
                                           width: double.infinity,
                                           padding: const EdgeInsets.symmetric(vertical: 12),
                                           decoration: BoxDecoration(
-                                            color: accent.withOpacity(0.12),
+                                            color: _accent.withOpacity(0.12),
                                             borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(color: accent.withOpacity(0.2)),
+                                            border: Border.all(color: _accent.withOpacity(0.2)),
                                           ),
                                           child: Text(t('showMore'), textAlign: TextAlign.center,
-                                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: accent)),
+                                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _accent)),
                                         ),
                                       ),
                                     ),
@@ -424,14 +402,11 @@ class _DetailPageState extends State<DetailPage> {
 
 class _HeroCover extends StatelessWidget {
   final MangaModel manga;
-  final bool dark, isArabic;
-  final Color accent;
-  final bool isFav;
+  final bool isArabic, isFav;
   final VoidCallback onFavTap, onBack;
 
   const _HeroCover({
-    required this.manga, required this.dark, required this.accent,
-    required this.isFav, required this.isArabic,
+    required this.manga, required this.isFav, required this.isArabic,
     required this.onFavTap, required this.onBack,
   });
 
@@ -442,21 +417,20 @@ class _HeroCover extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Hero Animation — نفس الـ tag بالكارد ──
           Hero(
             tag: 'cover-${manga.id}',
             child: manga.cover.isNotEmpty
                 ? CachedNetworkImage(
                     imageUrl: manga.cover, fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(color: const Color(0xFF3A2960)),
-                    errorWidget: (_, __, ___) => Container(
-                      decoration: const BoxDecoration(
+                    placeholder: (_, __) => const ColoredBox(color: Color(0xFF3A2960)),
+                    errorWidget: (_, __, ___) => const DecoratedBox(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(colors: [Color(0xFF3A2960), Color(0xFF1A1622)]),
                       ),
                     ),
                   )
-                : Container(
-                    decoration: const BoxDecoration(
+                : const DecoratedBox(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(colors: [Color(0xFF3A2960), Color(0xFF1A1622)]),
                     ),
                   ),
@@ -470,14 +444,13 @@ class _HeroCover extends StatelessWidget {
                     Colors.transparent,
                     const Color(0xFF0E0B14).withOpacity(0.15),
                     const Color(0xFF0E0B14).withOpacity(0.75),
-                    dark ? const Color(0xFF0A0714) : const Color(0xFFEDEEF4),
+                    const Color(0xFF0A0714),
                   ],
                   stops: const [0.0, 0.4, 0.75, 1.0],
                 ),
               ),
             ),
           ),
-          // زر الرجوع — يمين بالعربي، يسار بالإنجليزي
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
             left: isArabic ? null : 16,
@@ -489,9 +462,7 @@ class _HeroCover extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: dark
-                      ? const Color(0xFF8B5CF6).withOpacity(0.25)
-                      : const Color(0xFF3F5EFB).withOpacity(0.25)),
+                  border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.25)),
                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 14)],
                 ),
                 child: Icon(
@@ -509,14 +480,9 @@ class _HeroCover extends StatelessWidget {
 
 class _InfoCard extends StatelessWidget {
   final String label, value;
-  final bool dark, isStatus;
-  final Color cardBg, textClr;
+  final bool isStatus;
 
-  const _InfoCard({
-    required this.label, required this.value,
-    required this.dark, required this.cardBg, required this.textClr,
-    this.isStatus = false,
-  });
+  const _InfoCard({required this.label, required this.value, this.isStatus = false});
 
   @override
   Widget build(BuildContext context) {
@@ -524,24 +490,20 @@ class _InfoCard extends StatelessWidget {
         ? (value == 'مكتملة' || value == 'Completed' || value == 'Cancelled' || value == 'ملغاة'
             ? const Color(0xFFF87171)
             : const Color(0xFF4ADE80))
-        : (dark ? Colors.white : textClr);
+        : Colors.white;
 
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
-          color: cardBg,
+          color: AppColors.darkBgCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: dark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.07),
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.06)),
         ),
         child: Column(
           children: [
-            Text(label, style: TextStyle(
-              fontSize: 9.5,
-              color: dark ? const Color(0xFFA1A1AA) : const Color(0xFF6B7280),
-              fontWeight: FontWeight.w500,
+            Text(label, style: const TextStyle(
+              fontSize: 9.5, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w500,
             )),
             const SizedBox(height: 5),
             Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: valueColor)),
@@ -554,16 +516,12 @@ class _InfoCard extends StatelessWidget {
 
 class _ChapterItem extends StatelessWidget {
   final ChapterModel chapter;
-  final bool dark;
-  final Color accent, cardBg, textClr, subClr;
   final String chapterLabel, pageLabel;
   final VoidCallback onTap;
 
   const _ChapterItem({
-    required this.chapter, required this.dark, required this.accent,
-    required this.cardBg, required this.textClr, required this.subClr,
-    required this.chapterLabel, required this.pageLabel,
-    required this.onTap,
+    required this.chapter, required this.chapterLabel,
+    required this.pageLabel, required this.onTap,
   });
 
   @override
@@ -574,7 +532,7 @@ class _ChapterItem extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: cardBg,
+          color: AppColors.darkBgCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white.withOpacity(0.05)),
         ),
@@ -585,17 +543,17 @@ class _ChapterItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('$chapterLabel ${chapter.number}',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: textClr)),
+                      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: Color(0xFFE2DEF0))),
                   const SizedBox(height: 3),
                   Text('${chapter.pages} $pageLabel',
-                      style: TextStyle(fontSize: 10.5, color: subClr)),
+                      style: const TextStyle(fontSize: 10.5, color: AppColors.darkTextSecondary)),
                 ],
               ),
             ),
             Container(
               width: 30, height: 30,
-              decoration: BoxDecoration(color: accent.withOpacity(0.15), shape: BoxShape.circle),
-              child: Icon(Icons.play_arrow_rounded, color: accent, size: 16),
+              decoration: BoxDecoration(color: AppColors.darkAccentNeon.withOpacity(0.15), shape: BoxShape.circle),
+              child: const Icon(Icons.play_arrow_rounded, color: AppColors.darkAccentNeon, size: 16),
             ),
           ],
         ),
