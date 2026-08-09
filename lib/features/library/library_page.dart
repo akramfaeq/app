@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_provider.dart';
 import '../../models/manga_model.dart';
 import '../../services/manga_service.dart';
+import '../../services/favorites_service.dart';
 import '../details/detail_page.dart';
 
 class LibraryPage extends StatefulWidget {
@@ -151,12 +153,42 @@ class _LibraryHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_LibraryHeaderDelegate old) => old.child != child;
 }
 
-class _LibraryCard extends StatelessWidget {
+class _LibraryCard extends StatefulWidget {
   final MangaModel manga;
   const _LibraryCard({required this.manga});
 
   @override
+  State<_LibraryCard> createState() => _LibraryCardState();
+}
+
+class _LibraryCardState extends State<_LibraryCard> {
+  final _svc = FavoritesService.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _svc.load();
+    _svc.addListener(_rebuild);
+  }
+
+  @override
+  void dispose() {
+    _svc.removeListener(_rebuild);
+    super.dispose();
+  }
+
+  void _rebuild() { if (mounted) setState(() {}); }
+
+  Future<void> _toggle() async {
+    HapticFeedback.selectionClick();
+    await _svc.toggle(widget.manga);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isFav = _svc.isFavorite(widget.manga.id);
+    final manga = widget.manga;
+
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -224,18 +256,33 @@ class _LibraryCard extends StatelessWidget {
                       ),
                     ),
 
+                    // ── زر القلب المتصل بـ FavoritesService ──
                     Positioned(
                       top: 8, right: 8,
-                      child: Container(
-                        width: 28, height: 28,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.darkAccentNeon.withOpacity(0.6), width: 1.2),
-                          boxShadow: [BoxShadow(color: AppColors.darkAccentNeon.withOpacity(0.30), blurRadius: 6)],
+                      child: GestureDetector(
+                        onTap: _toggle,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 28, height: 28,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isFav
+                                  ? const Color(0xFFE63946).withOpacity(0.7)
+                                  : AppColors.darkAccentNeon.withOpacity(0.6),
+                              width: 1.2,
+                            ),
+                            boxShadow: isFav
+                                ? [BoxShadow(color: const Color(0xFFE63946).withOpacity(0.35), blurRadius: 8)]
+                                : [BoxShadow(color: AppColors.darkAccentNeon.withOpacity(0.30), blurRadius: 6)],
+                          ),
+                          child: Icon(
+                            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            color: isFav ? const Color(0xFFE63946) : Colors.white.withOpacity(0.9),
+                            size: 14,
+                          ),
                         ),
-                        child: Icon(Icons.favorite_border_rounded,
-                            color: Colors.white.withOpacity(0.9), size: 14),
                       ),
                     ),
                   ],

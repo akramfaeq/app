@@ -6,6 +6,7 @@ import '../../core/theme/app_provider.dart';
 import '../../models/manga_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/manga_service.dart';
+import '../../services/favorites_service.dart';
 import '../details/detail_page.dart';
 
 class SearchPage extends StatefulWidget {
@@ -458,14 +459,43 @@ class _Chip extends StatelessWidget {
   }
 }
 
-class _SearchCard extends StatelessWidget {
+class _SearchCard extends StatefulWidget {
   final MangaModel manga;
   const _SearchCard({required this.manga});
+
+  @override
+  State<_SearchCard> createState() => _SearchCardState();
+}
+
+class _SearchCardState extends State<_SearchCard> {
+  final _svc = FavoritesService.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _svc.load();
+    _svc.addListener(_rebuild);
+  }
+
+  @override
+  void dispose() {
+    _svc.removeListener(_rebuild);
+    super.dispose();
+  }
+
+  void _rebuild() { if (mounted) setState(() {}); }
+
+  Future<void> _toggle() async {
+    HapticFeedback.selectionClick();
+    await _svc.toggle(widget.manga);
+  }
 
   @override
   Widget build(BuildContext context) {
     const cardClr = Color(0xFF161129);
     const accent  = AppColors.darkAccentNeon;
+    final isFav   = _svc.isFavorite(widget.manga.id);
+    final manga   = widget.manga;
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -532,18 +562,33 @@ class _SearchCard extends StatelessWidget {
                       ),
                     ),
 
+                    // ── زر القلب المتصل بـ FavoritesService ──
                     Positioned(
                       top: 8, right: 8,
-                      child: Container(
-                        width: 28, height: 28,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: accent.withOpacity(0.6), width: 1.2),
-                          boxShadow: [BoxShadow(color: accent.withOpacity(0.30), blurRadius: 6)],
+                      child: GestureDetector(
+                        onTap: _toggle,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 28, height: 28,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isFav
+                                  ? const Color(0xFFE63946).withOpacity(0.7)
+                                  : accent.withOpacity(0.6),
+                              width: 1.2,
+                            ),
+                            boxShadow: isFav
+                                ? [BoxShadow(color: const Color(0xFFE63946).withOpacity(0.35), blurRadius: 8)]
+                                : [BoxShadow(color: accent.withOpacity(0.30), blurRadius: 6)],
+                          ),
+                          child: Icon(
+                            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            color: isFav ? const Color(0xFFE63946) : Colors.white.withOpacity(0.9),
+                            size: 14,
+                          ),
                         ),
-                        child: Icon(Icons.favorite_border_rounded,
-                            color: Colors.white.withOpacity(0.9), size: 14),
                       ),
                     ),
                   ],
