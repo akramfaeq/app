@@ -1,0 +1,315 @@
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8"></meta>
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"></meta>
+  <title>OnyxVPN - Fast & Secure VPN</title>
+  <style>
+    html { scroll-behavior: smooth; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #0d0d1a;
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: rgba(13,13,26,0.97);
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      z-index: 100;
+      border-bottom: 1px solid #2a1a4a;
+      transition: top 0.3s ease-in-out;
+      padding-top: max(16px, env(safe-area-inset-top));
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; }
+    .logo span { color: #7c3aed; }
+
+    .hero {
+      text-align: center;
+      padding: 130px 24px 50px;
+      background: radial-gradient(ellipse at center, #1a0a3a 0%, #0d0d1a 70%);
+    }
+    .hero img.app-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 40px rgba(124,58,237,0.5);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: 900;
+      margin-bottom: 14px;
+      line-height: 1.15;
+    }
+    .hero h1 span { color: #7c3aed; }
+    .hero p {
+      font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+      color: #a0a0c0;
+      max-width: 480px;
+      margin: 0 auto 30px;
+      line-height: 1.7;
+    }
+    .download-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: #fff;
+      padding: 15px 36px;
+      border-radius: 50px;
+      font-size: clamp(0.95rem, 3.5vw, 1.05rem);
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 0 28px rgba(124,58,237,0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+      max-width: 340px;
+      width: 100%;
+      text-align: center;
+    }
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 42px rgba(168,85,247,0.6);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: #2a1a4a;
+      border-top: 1px solid #2a1a4a;
+      border-bottom: 1px solid #2a1a4a;
+    }
+    .stat { text-align: center; padding: 24px 16px; background: #0d0d1a; }
+    .stat h3 { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 800; color: #a855f7; }
+    .stat p { color: #8080a0; font-size: 0.82rem; margin-top: 4px; }
+
+    .screenshots {
+      padding: 56px 24px;
+      text-align: center;
+      background: #0a0a18;
+    }
+    .screenshots h2 { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 800; margin-bottom: 8px; }
+    .screenshots h2 span { color: #7c3aed; }
+    .screenshots .sub { color: #8080a0; margin-bottom: 32px; font-size: 0.92rem; }
+    .screenshots-grid {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .screenshots-grid::-webkit-scrollbar { display: none; }
+    .screenshots-grid img {
+      width: 160px;
+      flex-shrink: 0;
+      border-radius: 18px;
+      border: 2px solid #2a1a4a;
+      box-shadow: 0 0 24px rgba(124,58,237,0.2);
+      transition: transform 0.3s;
+    }
+    .screenshots-grid img:hover { transform: scale(1.04); }
+
+    .features { padding: 56px 24px; text-align: center; }
+    .features h2 { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 800; margin-bottom: 8px; }
+    .features h2 span { color: #7c3aed; }
+    .features .sub { color: #8080a0; margin-bottom: 36px; font-size: 0.92rem; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .feature-card {
+      background: #13132a;
+      border: 1px solid #2a1a4a;
+      border-radius: 18px;
+      padding: 22px 16px;
+      text-align: left;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .feature-card:hover { border-color: #7c3aed; transform: translateY(-3px); }
+    .feature-card .icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .feature-card h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 6px; }
+    .feature-card p { color: #8080a0; font-size: 0.8rem; line-height: 1.55; }
+
+    .privacy { padding: 56px 24px; background: #0a0a18; text-align: center; }
+    .privacy h2 { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 800; margin-bottom: 8px; }
+    .privacy h2 span { color: #7c3aed; }
+    .privacy .sub { color: #8080a0; margin-bottom: 32px; font-size: 0.92rem; }
+    .privacy-box {
+      max-width: 680px;
+      margin: 0 auto;
+      background: #13132a;
+      border: 1px solid #2a1a4a;
+      border-radius: 18px;
+      padding: 28px 22px;
+      text-align: left;
+    }
+    .privacy-box p { color: #c0c0e0; line-height: 1.8; margin-bottom: 10px; font-size: 0.88rem; }
+    .privacy-box p:last-child { margin-bottom: 0; }
+    .section-label {
+      color: #7c3aed;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .divider { border: none; border-top: 1px solid #2a1a4a; margin: 22px 0; }
+
+    .cta {
+      text-align: center;
+      padding: 70px 24px;
+      background: radial-gradient(ellipse at center, #1a0a3a 0%, #0d0d1a 70%);
+    }
+    .cta h2 { font-size: clamp(1.6rem, 6.5vw, 2.2rem); font-weight: 900; margin-bottom: 12px; line-height: 1.2; }
+    .cta h2 span { color: #a855f7; }
+    .cta p { color: #8080a0; margin-bottom: 30px; font-size: 0.95rem; }
+
+    footer {
+      text-align: center;
+      padding: 20px 24px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      color: #4a4a6a;
+      font-size: 0.82rem;
+      border-top: 1px solid #1a1a30;
+    }
+
+    @media (min-width: 640px) {
+      nav { padding: 20px 40px; }
+      .hero { padding: 160px 40px 70px; }
+      .hero img.app-icon { width: 120px; height: 120px; }
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        background: transparent;
+        border: none;
+        padding: 50px 20px;
+        flex-wrap: wrap;
+      }
+      .stat { background: transparent; padding: 0; }
+      .features-grid { grid-template-columns: repeat(2, 240px); gap: 24px; }
+      .feature-card { padding: 32px 24px; text-align: center; }
+      .feature-card p { font-size: 0.88rem; }
+      .screenshots-grid { flex-wrap: wrap; }
+      .screenshots-grid img { width: 200px; }
+      .download-btn { width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="logo">Onyx<span>VPN</span></div>
+</nav>
+
+<section class="hero">
+  <img alt="OnyxVPN Icon" class="app-icon" src="https://f.top4top.io/p_39178hrl60.jpeg" />
+  <h1>Onyx<span>VPN</span></h1>
+  <p>Fast, free, and private. Connect to servers worldwide with one tap — no account, no logs, no limits.</p>
+  <a class="download-btn" href="#download-section">⬇ Download for Android</a>
+</section>
+
+<div class="stats">
+  <div class="stat"><h3>100%</h3><p>No-Log Policy</p></div>
+  <div class="stat"><h3>Free</h3><p>No Subscription</p></div>
+  <div class="stat"><h3>1-Tap</h3><p>Quick Connect</p></div>
+  <div class="stat"><h3>Global</h3><p>Servers Worldwide</p></div>
+</div>
+
+<section class="screenshots">
+  <h2>See It In <span>Action</span></h2>
+  <p class="sub">Clean, dark UI built for speed and simplicity</p>
+  <div class="screenshots-grid">
+    <img alt="Not Connected" src="https://h.top4top.io/p_39176tpqz0.jpeg" />
+    <img alt="Connecting" src="https://f.top4top.io/p_3917ozpzp9.jpeg" />
+    <img alt="ReConnected" src="https://a.top4top.io/p_3917k6vvc5.jpeg" />
+  </div>
+</section>
+
+<section class="features">
+  <h2>Why <span>OnyxVPN</span>?</h2>
+  <p class="sub">Everything you need, nothing you don't</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="icon">🔒</div>
+      <h3>Zero Logs</h3>
+      <p>We never store your browsing activity, IP address, or connection timestamps.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">⚡</div>
+      <h3>Lightning Fast</h3>
+      <p>Powered by VPNGate servers with sub-5ms latency on top connections.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🌍</div>
+      <h3>Global Servers</h3>
+      <p>Connect to servers in Japan, USA, Europe, Korea, and many more countries.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">👤</div>
+      <h3>No Account</h3>
+      <p>Just download and connect. No sign-up, no email, no personal data required.</p>
+    </div>
+  </div>
+</section>
+
+<section class="privacy">
+  <h2>Privacy <span>Policy</span></h2>
+  <p class="sub">Your privacy is our commitment</p>
+  <div class="privacy-box">
+    <div class="section-label">Privacy Policy</div>
+    <p>OnyxVPN is committed to protecting your privacy.</p>
+    <p>• We do not log your browsing activity, DNS queries, IP addresses, or connection timestamps.</p>
+    <p>• We do not sell, rent, or share your personal data with third parties.</p>
+    <p>• VPN servers are provided by VPNGate, a public VPN relay service operated by the University of Tsukuba, Japan.</p>
+    <p>• Ads are served by Unity Ads. Their privacy policy applies to ad interactions.</p>
+    <p>• We use Supabase to cache server lists only — no personal data is stored.</p>
+    <p>• The app does not require account registration or any personal information.</p>
+    <hr class="divider" />
+    <div class="section-label">Terms of Use</div>
+    <p>• OnyxVPN is provided for legitimate privacy and security purposes only.</p>
+    <p>• You agree not to use this app for any illegal activities.</p>
+    <p>• VPN speeds depend on the public relay servers and your internet connection. We do not guarantee specific speeds.</p>
+    <p>• The service is provided "as is" without warranty of any kind.</p>
+  </div>
+</section>
+
+<section class="cta" id="download-section">
+  <h2>Stay <span>Protected</span> Today</h2>
+  <p>Free forever. No sign-up. One tap away.</p>
+  <a class="download-btn" href="https://github.com/akram-app/onyxvpn/releases/download/V1.0/Onyxvpn.apk">⬇ Download OnyxVPN</a>
+</section>
+
+<footer>
+  <p>© 2025 OnyxVPN. All rights reserved.</p>
+</footer>
+
+<script>
+  let lastScrollTop = 0;
+  const navbar = document.getElementById("navbar");
+
+  window.addEventListener("scroll", function() {
+    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+    if (currentScroll > lastScrollTop && currentScroll > 80) {
+      navbar.style.top = "-90px";
+    } else {
+      navbar.style.top = "0";
+    }
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+  }, { passive: true });
+</script>
+
+</body>
+</html>
